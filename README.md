@@ -1,7 +1,7 @@
 
 
 ```md
-# 🚀 Digital Nomads
+# 🚀 Hackathon Project
 
 Welcome to our Hackathon project! This repository contains two main folders:
 
@@ -9,6 +9,7 @@ Welcome to our Hackathon project! This repository contains two main folders:
 - `/backend` — Express.js backend
 
 ## 📁 Project Structure
+
 
 ```
 
@@ -23,6 +24,7 @@ project-root/
 └── README.md       # You're reading it
 
 ````
+
 
 ---
 
@@ -51,9 +53,6 @@ All changes must go through **Pull Requests (PRs)** and be approved by at least 
 git checkout main
 git pull origin main
 git checkout -b feature/your-branch-name
-````
-
----
 
 ## 📁 Working in the Correct Folder
 
