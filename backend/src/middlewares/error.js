@@ -9,17 +9,6 @@ const HandleErrors = (err, req, res, next) => {
   // Log the error for debugging
   console.error("Global error:", err);
 
-  // Handle Prisma client errors
-  if (
-    err.name === "PrismaClientValidationError" ||
-    err.name === "PrismaClientKnownRequestError"
-  ) {
-    return res.status(400).json({
-      message: "Invalid data provided",
-      error: err.message,
-    });
-  }
-
   // Handle other types of errors
   const statusCode = err.statusCode || 500;
   const message = err.message || "An unexpected error occurred";
