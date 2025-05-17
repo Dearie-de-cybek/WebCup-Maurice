@@ -3,6 +3,8 @@ const router = express.Router();
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const { v4: uuidv4 } = require("uuid");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 class AuthController {
   async register(req, res) {
@@ -54,10 +56,33 @@ class AuthController {
     try {
       const { email, password } = req.body;
       const user = await User.findOne({ email });
-      if (!user || user.password !== password) {
+      if (!user) {
+        return res.status(401).json({ error: "Email not found" });
+      }
+
+      // Compare the hashed password
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
-      res.status(200).json({ message: "Login successful", user });
+
+      // Generate a JWT token
+      const token = jwt.sign(
+        { uuid: user.uuid },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+      ).split('.')[0];
+
+      res.status(200).json({
+        message: "Login successful",
+        user: {
+          uuid: user.uuid,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+        token,
+      });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }

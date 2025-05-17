@@ -8,7 +8,7 @@ const pageSchema = new Schema({
         required: true,
         trim: true,
     },
-    uuid: {
+    user_uuid: {
         type: String,
         required: true,
         unique: true,
