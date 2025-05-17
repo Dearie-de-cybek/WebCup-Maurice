@@ -321,7 +321,12 @@ class PageController {
         return res.status(404).json({ message: "Page not found" });
       }
   
-      // Add user_uuid to votes (allowing duplicates)
+      // Check if user_uuid already exists in votes
+      if (page.votes.includes(user_uuid)) {
+        return res.status(400).json({ message: "User has already voted on this page" });
+      }
+  
+      // Add user_uuid to votes
       page.votes.push(user_uuid);
       await page.save();
   
