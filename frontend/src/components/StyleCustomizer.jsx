@@ -363,7 +363,7 @@ const StyleCustomizer = ({ pageData, setPageData, onNext, onPrev }) => {
                   accept="image/*"
                   multiple
                   onChange={(e) => e.target.files && handleImageUpload(Array.from(e.target.files))}
-                  className="hidden"
+                  className="hidden text-black"
                 />
               </div>
             )}
@@ -426,7 +426,7 @@ const StyleCustomizer = ({ pageData, setPageData, onNext, onPrev }) => {
                         type="file"
                         accept="audio/*"
                         onChange={(e) => e.target.files[0] && handleMusicUpload(e.target.files[0])}
-                        className="hidden"
+                        className="hidden text-black"
                       />
                     </>
                   )}
@@ -494,7 +494,7 @@ const StyleCustomizer = ({ pageData, setPageData, onNext, onPrev }) => {
                   id="autoplay-music"
                   checked={pageData.autoplayMusic || false}
                   onChange={(e) => setPageData({ ...pageData, autoplayMusic: e.target.checked })}
-                  className="mr-3"
+                  className="mr-3 text-black"
                 />
                 <label htmlFor="autoplay-music" className="text-sm font-medium text-gray-700">
                   Auto-play background music
@@ -507,7 +507,7 @@ const StyleCustomizer = ({ pageData, setPageData, onNext, onPrev }) => {
                   id="slideshow-autoplay"
                   checked={pageData.slideshowAutoplay || false}
                   onChange={(e) => setPageData({ ...pageData, slideshowAutoplay: e.target.checked })}
-                  className="mr-3"
+                  className="mr-3 text-black"
                 />
                 <label htmlFor="slideshow-autoplay" className="text-sm font-medium text-gray-700">
                   Auto-play image slideshow
