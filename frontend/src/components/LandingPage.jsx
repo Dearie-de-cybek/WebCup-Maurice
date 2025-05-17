@@ -50,7 +50,7 @@ const LandingPage = () => {
   };
 
   const handleSignOut = () => {
-    localStorage.removeItem('Active User');
+    localStorage.clear();
     setUser(null);
     setShowDashboard(false);
   };
