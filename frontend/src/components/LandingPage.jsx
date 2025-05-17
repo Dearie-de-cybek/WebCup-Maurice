@@ -6,11 +6,13 @@ import { useNavigate } from 'react-router-dom';
 import FeatureCard from './shared/FeatureCard';
 import FloatingElements from './shared/FloatingElements';
 import SignIn from './SignIn';
+import SignUp from './SignUp';
 import Dashboard from './Dashboard';
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignUp, setShowSignUp] = useState(false);
   const [user, setUser] = useState(null);
   const [showDashboard, setShowDashboard] = useState(false);
 
@@ -29,6 +31,7 @@ const LandingPage = () => {
   const handleSignIn = (userData) => {
     setUser(userData);
     setShowSignIn(false);
+    setShowSignUp(false);
   };
 
   const handleSignOut = () => {
@@ -39,6 +42,21 @@ const LandingPage = () => {
 
   const openDashboard = () => {
     setShowDashboard(true);
+  };
+
+  const handleSwitchToSignUp = () => {
+    setShowSignIn(false);
+    setShowSignUp(true);
+  };
+
+  const handleSwitchToSignIn = () => {
+    setShowSignUp(false);
+    setShowSignIn(true);
+  };
+
+  const closeModals = () => {
+    setShowSignIn(false);
+    setShowSignUp(false);
   };
 
   // If dashboard is open, show it
@@ -93,16 +111,29 @@ const LandingPage = () => {
             </>
           ) : (
             // User is not signed in
-            <motion.button
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowSignIn(true)}
-              className="bg-white text-purple-900 px-6 py-2 rounded-full font-semibold"
-            >
-              Sign In
-            </motion.button>
+            <div className="flex items-center gap-3">
+              <motion.button
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowSignIn(true)}
+                className="text-white/80 hover:text-white px-4 py-2 rounded-full font-semibold transition-colors"
+              >
+                Sign In
+              </motion.button>
+              <motion.button
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowSignUp(true)}
+                className="bg-white text-purple-900 px-6 py-2 rounded-full font-semibold hover:bg-gray-100 transition-colors"
+              >
+                Join Now
+              </motion.button>
+            </div>
           )}
         </div>
       </nav>
@@ -184,12 +215,20 @@ const LandingPage = () => {
       {/* Floating Elements */}
       <FloatingElements />
 
-      {/* Sign In Modal */}
+      {/* Auth Modals */}
       <AnimatePresence>
         {showSignIn && (
           <SignIn
-            onClose={() => setShowSignIn(false)}
+            onClose={closeModals}
             onSignIn={handleSignIn}
+            onSwitchToSignUp={handleSwitchToSignUp}
+          />
+        )}
+        {showSignUp && (
+          <SignUp
+            onClose={closeModals}
+            onSignIn={handleSignIn}
+            onSwitchToSignIn={handleSwitchToSignIn}
           />
         )}
       </AnimatePresence>
