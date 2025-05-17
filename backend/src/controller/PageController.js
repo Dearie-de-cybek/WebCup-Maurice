@@ -28,16 +28,16 @@ class PageController {
         textSize,
         music,
       } = req.body;
-  
+
       // Get user_uuid from authenticated user
       const user_uuid = req.user.uuid;
-  
+
       // Generate a unique slug from title by adding a timestamp
       // This ensures uniqueness even if the same user creates pages with identical titles
       const baseSlug = slugify(title);
       const timestamp = new Date().getTime().toString().slice(-6); // Use last 6 digits of timestamp
       const slug = `${baseSlug}-${timestamp}`;
-  
+
       // Handle file paths for images (completely optional)
       const images = req.files["images"]
         ? req.files["images"].map((file) => ({
@@ -45,12 +45,12 @@ class PageController {
             caption: "", // Default empty caption
           }))
         : []; // Empty array if no images
-  
+
       // Handle background image (optional)
       const backgroundImage = req.files["backgroundImage"]
         ? req.files["backgroundImage"][0].path
         : null;
-  
+
       const newPage = new Page({
         title,
         user_uuid,
@@ -68,9 +68,9 @@ class PageController {
         textSize,
         click_count: 0,
       });
-  
+
       const savedPage = await newPage.save();
-  
+
       // Return response without internal fields
       const pageResponse = {
         id: savedPage._id,
@@ -90,14 +90,14 @@ class PageController {
         click_count: savedPage.click_count,
         createdAt: savedPage.createdAt,
       };
-  
+
       res.status(201).json({
         message: "Page created successfully",
         page: pageResponse,
       });
     } catch (error) {
       console.error("Page creation error:", error);
-      
+
       // Clean up uploaded files if error occurs
       if (req.files) {
         Object.values(req.files).forEach((fileArray) => {
@@ -108,19 +108,20 @@ class PageController {
           });
         });
       }
-  
+
       // Provide more detailed error message for debugging
       if (error.code === 11000) {
         // This should no longer happen with our timestamp approach, but kept for safety
         return res.status(400).json({
-          error: "Page creation failed due to a duplicate key error. Please try again.",
-          details: error.message
+          error:
+            "Page creation failed due to a duplicate key error. Please try again.",
+          details: error.message,
         });
       }
-      
-      res.status(500).json({ 
-        error: "Failed to create page", 
-        details: error.message 
+
+      res.status(500).json({
+        error: "Failed to create page",
+        details: error.message,
       });
     }
   }
@@ -315,21 +316,23 @@ class PageController {
     try {
       const user_uuid = req.user.uuid;
       const { pageId } = req.params;
-  
+
       const page = await Page.findById(pageId);
       if (!page) {
         return res.status(404).json({ message: "Page not found" });
       }
-  
+
       // Check if user_uuid already exists in votes
       if (page.votes.includes(user_uuid)) {
-        return res.status(400).json({ message: "User has already voted on this page" });
+        return res
+          .status(400)
+          .json({ message: "User has already voted on this page" });
       }
-  
+
       // Add user_uuid to votes
       page.votes.push(user_uuid);
       await page.save();
-  
+
       res.status(200).json({
         message: "Vote added successfully",
         votes: page.votes,
@@ -338,27 +341,29 @@ class PageController {
       res.status(500).json({ error: error.message });
     }
   }
-  
+
   async removeVoteFromPage(req, res) {
     try {
       const user_uuid = req.user.uuid;
       const { pageId } = req.params;
-  
+
       const page = await Page.findById(pageId);
       if (!page) {
         return res.status(404).json({ message: "Page not found" });
       }
-  
+
       // Find index of one occurrence of user_uuid in the votes array
       const index = page.votes.indexOf(user_uuid);
       if (index === -1) {
-        return res.status(400).json({ message: "User has not voted on this page" });
+        return res
+          .status(400)
+          .json({ message: "User has not voted on this page" });
       }
-  
+
       // Remove one occurrence of the user's vote
       page.votes.splice(index, 1);
       await page.save();
-  
+
       res.status(200).json({
         message: "Vote removed successfully",
         votes: page.votes,
@@ -367,7 +372,6 @@ class PageController {
       res.status(500).json({ error: error.message });
     }
   }
-  
 }
 
 module.exports = PageController;

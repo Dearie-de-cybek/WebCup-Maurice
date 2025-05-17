@@ -199,7 +199,7 @@ const Dashboard = ({
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <a href="/vote">
+                      <a href="/halloffame">
                         <span>Enter the Cosmos</span>
                       </a>
 
