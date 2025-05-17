@@ -72,7 +72,7 @@ const SignIn = ({ onClose, onSignIn }) => {
       exit={{ opacity: 0 }}
     >
       {/* Dramatic Background */}
-      <div className="absolute inset-0 bg-black bg-opacity-80" onClick={onClose} />
+      <div className="absolute inset-0 bg-rose-50 " onClick={onClose} />
       
       {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -100,7 +100,7 @@ const SignIn = ({ onClose, onSignIn }) => {
         
         {/* Dramatic Light Beams */}
         <motion.div
-          className="absolute top-0 left-1/4 w-1 h-full bg-gradient-to-b from-red-500/30 to-transparent"
+          className="absolute top-0 left-1/4 w-1 h-full bg-gradient-to-b from-slate-500/30 to-transparent"
           animate={{
             opacity: [0.3, 0.8, 0.3],
             scaleX: [1, 1.5, 1],
@@ -123,7 +123,7 @@ const SignIn = ({ onClose, onSignIn }) => {
         initial="hidden"
         animate="visible"
         exit="exit"
-        className="relative bg-gradient-to-br from-gray-900 via-red-900 to-black rounded-2xl shadow-2xl border border-red-500/30 overflow-hidden max-w-md w-full"
+        className="relative bg-gradient-to-br from-gray-100 bg-pink-400 to-purple-300 rounded-2xl shadow-2xl border border-red-500/30 overflow-hidden max-w-md w-full"
       >
         {/* Glowing Border Effect */}
         <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 via-purple-500/20 to-red-500/20 rounded-2xl opacity-75" />
