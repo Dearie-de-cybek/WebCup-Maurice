@@ -24,9 +24,9 @@ class PageRoute {
 
     // Create a new page (authenticated)
     this.router.post(
-      `${this.path}/store`,
-      isAuthenticated,
-      uploadFiles,
+      `${this.path}/store`,  // Ensure this.path is defined
+      PageController.uploadFiles(),  // Instantiate Multer middleware
+      isAuthenticated,  // Auth middleware
       useCatchErrors(this.pageController.createPage.bind(this.pageController))
     );
 
@@ -47,8 +47,8 @@ class PageRoute {
     // Update a page (authenticated, user must own page)
     this.router.patch(
       `${this.path}/update/:id`,
+      PageController.uploadFiles(),
       isAuthenticated,
-      uploadFiles,
       useCatchErrors(this.pageController.updatePage.bind(this.pageController))
     );
 

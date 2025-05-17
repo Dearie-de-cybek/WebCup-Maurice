@@ -119,7 +119,6 @@ const SignUp = ({ onClose, onSignIn, onSwitchToSignIn }) => {
       password: formData.password
     };
 
-    localStorage.setItem('theend_user', JSON.stringify(userData));
     setLoading(false);
     onSignIn(userData);
   };

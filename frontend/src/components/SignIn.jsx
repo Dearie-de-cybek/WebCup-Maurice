@@ -98,10 +98,15 @@ const SignIn = () => {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    alert(
-      "Welcome back to TheEnd.page! Time to create your dramatic goodbye! 🎭"
-    );
-    setIsLoading(false);
+    // Simulate login - in real app, validate credentials here
+    const userData = {
+      email: formData.email,
+      password: formData.password
+    };
+
+    localStorage.setItem('theend_user', JSON.stringify(userData));
+    setLoading(false);
+    onSignIn(userData);
   };
 
   const handleFocus = (e) => {

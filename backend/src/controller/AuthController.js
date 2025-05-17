@@ -34,17 +34,8 @@ class AuthController {
 
       await user.save();
 
-      const userResponse = {
-        uuid: user.uuid,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        createdAt: user.createdAt,
-      };
-
       res.status(201).json({
-        message: "User created successfully",
-        user: userResponse,
+        message: "User created successfully"
       });
     } catch (error) {
       console.error(error);
@@ -78,6 +69,7 @@ class AuthController {
           name: user.name,
           email: user.email,
           role: user.role,
+          createdAt: user.createdAt
         },
         token,
       });

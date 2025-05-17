@@ -288,7 +288,7 @@ const Dashboard = ({ user, onSignOut }) => {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.9, type: "spring" }}
                 >
-                  {formatDate(user.joinedAt)}
+                  {formatDate(user.CreatedAt)}
                 </motion.p>
               </div>
               <Calendar className="w-8 h-8 text-orange-400" />
