@@ -29,10 +29,13 @@ export const signUpUser = async (userData) => {
   console.log(userData)
   const {name, email , password} = userData;
    try {
-    await api.post("/auth/register", {name, email, password });
+    const res = await api.post("/auth/register", {name, email, password });
+    return res
   } catch (error) {
-    return null;
-  }
+    const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message;
+    alert(`Sign Up failed: ${errorMessage}`);
+    return null;
+  }
 };
 
 // Get Profile

@@ -46,6 +46,7 @@ const LandingPage = () => {
     setUser(res.user);
     localStorage.setItem('Active User', JSON.stringify(res));
     setShowSignIn(false);
+    setShowDashboard(true);
   };
 
   const handleSignOut = () => {
