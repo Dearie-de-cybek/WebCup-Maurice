@@ -259,10 +259,10 @@ const StyleCustomizer = ({ pageData, setPageData, onNext, onPrev }) => {
                 <select 
                   value={pageData.fontFamily || fontOptions[0].value}
                   onChange={(e) => setPageData({ ...pageData, fontFamily: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full p-3 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-purple-500"
                 >
                   {fontOptions.map((font) => (
-                    <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
+                    <option key={font.value} value={font.value} style={{ fontFamily: font.value }} className='text-black'>
                       {font.name}
                     </option>
                   ))}
@@ -478,13 +478,13 @@ const StyleCustomizer = ({ pageData, setPageData, onNext, onPrev }) => {
                 <select 
                   value={pageData.animationStyle || 'default'}
                   onChange={(e) => setPageData({ ...pageData, animationStyle: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-black"
                 >
-                  <option value="default">Default</option>
-                  <option value="dramatic">Dramatic Entrance</option>
-                  <option value="subtle">Subtle Fade</option>
-                  <option value="bounce">Bouncy</option>
-                  <option value="slide">Slide In</option>
+                  <option className='text-black' value="default">Default</option>
+                  <option className='text-black' value="dramatic">Dramatic Entrance</option>
+                  <option className='text-black' value="subtle">Subtle Fade</option>
+                  <option className='text-black' value="bounce">Bouncy</option>
+                  <option className='text-black' value="slide">Slide In</option>
                 </select>
               </div>
 
