@@ -175,31 +175,82 @@ const SignUp = ({ onClose, onSignIn, onSwitchToSignIn }) => {
         onClick={onClose} 
       />
       
-      {/* Gentle Background Effects */}
+      {/* Different Background Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Floating Hearts */}
-        {[...Array(10)].map((_, i) => (
+        {/* Floating Stars */}
+        {[...Array(8)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute text-2xl opacity-20"
+            className="absolute text-2xl opacity-25"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
             }}
             animate={{
-              y: [0, -40, 0],
-              opacity: [0.1, 0.4, 0.1],
-              scale: [0.8, 1.2, 0.8],
-              rotate: [0, 10, -10, 0]
+              y: [0, -30, 0],
+              opacity: [0.15, 0.5, 0.15],
+              scale: [0.8, 1.1, 0.8],
+              rotate: [0, 360]
             }}
             transition={{
-              duration: 6 + Math.random() * 4,
+              duration: 8 + Math.random() * 4,
               repeat: Infinity,
               delay: Math.random() * 4,
               ease: "easeInOut"
             }}
           >
-            💕
+            ⭐
+          </motion.div>
+        ))}
+
+        {/* Floating Clouds */}
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={`cloud-${i}`}
+            className="absolute text-3xl opacity-20"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              x: [0, 50, 0],
+              y: [0, -20, 0],
+              opacity: [0.1, 0.3, 0.1],
+              scale: [0.9, 1.2, 0.9]
+            }}
+            transition={{
+              duration: 12 + Math.random() * 6,
+              repeat: Infinity,
+              delay: Math.random() * 6,
+              ease: "easeInOut"
+            }}
+          >
+            ☁️
+          </motion.div>
+        ))}
+
+        {/* Floating Moons */}
+        {[...Array(5)].map((_, i) => (
+          <motion.div
+            key={`moon-${i}`}
+            className="absolute text-xl opacity-30"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              rotate: [0, 360],
+              scale: [1, 1.3, 1],
+              opacity: [0.2, 0.4, 0.2]
+            }}
+            transition={{
+              duration: 10 + Math.random() * 5,
+              repeat: Infinity,
+              delay: Math.random() * 5,
+              ease: "easeInOut"
+            }}
+          >
+            🌙
           </motion.div>
         ))}
         
@@ -222,23 +273,23 @@ const SignUp = ({ onClose, onSignIn, onSwitchToSignIn }) => {
         />
         
         {/* Gentle Sparkles */}
-        {[...Array(8)].map((_, i) => (
+        {[...Array(12)].map((_, i) => (
           <motion.div
             key={`sparkle-${i}`}
-            className="absolute text-yellow-300/30 text-xl"
+            className="absolute text-yellow-300/40 text-lg"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
             }}
             animate={{
               opacity: [0, 1, 0],
-              scale: [0.5, 1.5, 0.5],
+              scale: [0.5, 1.8, 0.5],
               rotate: [0, 180, 360]
             }}
             transition={{
-              duration: 3,
+              duration: 4,
               repeat: Infinity,
-              delay: Math.random() * 3,
+              delay: Math.random() * 4,
               ease: "easeInOut"
             }}
           >
@@ -247,13 +298,13 @@ const SignUp = ({ onClose, onSignIn, onSwitchToSignIn }) => {
         ))}
       </div>
 
-      {/* Main Form Container */}
+      {/* Main Form Container - Made Smaller */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
         exit="exit"
-        className="relative w-full max-w-sm sm:max-w-md mx-auto"
+        className="relative w-full max-w-xs sm:max-w-sm mx-auto"
       >
         {/* Soft Glowing Border Container */}
         <div className="relative bg-gradient-to-br from-white/10 via-pink-100/10 to-purple-100/10 rounded-3xl overflow-hidden backdrop-blur-sm">
@@ -277,11 +328,11 @@ const SignUp = ({ onClose, onSignIn, onSwitchToSignIn }) => {
           
           {/* Inner content container */}
           <div className="relative bg-gradient-to-br from-white/95 via-pink-50/90 to-purple-50/85 m-1 rounded-3xl shadow-xl">
-            <div className="p-6 sm:p-8">
+            <div className="p-5 sm:p-6">
               {/* Header */}
-              <motion.div variants={itemVariants} className="text-center mb-6 sm:mb-8">
+              <motion.div variants={itemVariants} className="text-center mb-5 sm:mb-6">
                 <motion.div
-                  className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-pink-400 to-purple-400 rounded-full mb-4 shadow-lg"
+                  className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-pink-400 to-purple-400 rounded-full mb-3 shadow-lg"
                   animate={{
                     boxShadow: [
                       "0 0 20px rgba(236, 72, 153, 0.3)",
@@ -292,28 +343,28 @@ const SignUp = ({ onClose, onSignIn, onSwitchToSignIn }) => {
                   }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  <Heart className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+                  <Heart className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
                 </motion.div>
                 
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
                   Begin Your Journey
                 </h2>
-                <p className="text-gray-600 text-sm sm:text-base px-2">
+                <p className="text-gray-600 text-xs sm:text-sm px-2">
                   Create something beautiful from life's endings
                 </p>
               </motion.div>
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
                 <motion.div variants={itemVariants} className="relative">
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-pink-400" />
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-pink-400" />
                     <input
                       type="text"
                       value={formData.name}
                       onChange={(e) => handleChange('name', e.target.value)}
                       placeholder="Your beautiful name"
-                      className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-white/80 border border-pink-200 rounded-xl text-gray-800 placeholder-gray-500 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 focus:bg-white transition-all text-sm sm:text-base shadow-sm"
+                      className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-white/80 border border-pink-200 rounded-xl text-gray-800 placeholder-gray-500 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 focus:bg-white transition-all text-sm shadow-sm"
                       required
                     />
                   </div>
@@ -321,13 +372,13 @@ const SignUp = ({ onClose, onSignIn, onSwitchToSignIn }) => {
 
                 <motion.div variants={itemVariants} className="relative">
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-pink-400" />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-pink-400" />
                     <input
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleChange('email', e.target.value)}
                       placeholder="Email address"
-                      className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-white/80 border border-pink-200 rounded-xl text-gray-800 placeholder-gray-500 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 focus:bg-white transition-all text-sm sm:text-base shadow-sm"
+                      className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-white/80 border border-pink-200 rounded-xl text-gray-800 placeholder-gray-500 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 focus:bg-white transition-all text-sm shadow-sm"
                       required
                     />
                   </div>
@@ -335,13 +386,13 @@ const SignUp = ({ onClose, onSignIn, onSwitchToSignIn }) => {
 
                 <motion.div variants={itemVariants} className="relative">
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-pink-400" />
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-pink-400" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={formData.password}
                       onChange={(e) => handleChange('password', e.target.value)}
                       placeholder="Create a password"
-                      className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-3 sm:py-4 bg-white/80 border border-pink-200 rounded-xl text-gray-800 placeholder-gray-500 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 focus:bg-white transition-all text-sm sm:text-base shadow-sm"
+                      className="w-full pl-10 pr-10 py-2.5 sm:py-3 bg-white/80 border border-pink-200 rounded-xl text-gray-800 placeholder-gray-500 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 focus:bg-white transition-all text-sm shadow-sm"
                       required
                     />
                     <button
@@ -349,20 +400,20 @@ const SignUp = ({ onClose, onSignIn, onSwitchToSignIn }) => {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-pink-400 hover:text-pink-600 transition-colors"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </motion.div>
 
                 <motion.div variants={itemVariants} className="relative">
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-pink-400" />
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-pink-400" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={formData.confirmPassword}
                       onChange={(e) => handleChange('confirmPassword', e.target.value)}
                       placeholder="Confirm your password"
-                      className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-white/80 border border-pink-200 rounded-xl text-gray-800 placeholder-gray-500 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 focus:bg-white transition-all text-sm sm:text-base shadow-sm"
+                      className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-white/80 border border-pink-200 rounded-xl text-gray-800 placeholder-gray-500 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 focus:bg-white transition-all text-sm shadow-sm"
                       required
                     />
                   </div>
@@ -373,7 +424,7 @@ const SignUp = ({ onClose, onSignIn, onSwitchToSignIn }) => {
                   variants={itemVariants}
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 sm:py-4 bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400 text-white font-bold rounded-xl hover:from-pink-500 hover:via-purple-500 hover:to-pink-500 transition-all transform hover:scale-105 disabled:opacity-50 disabled:transform-none flex items-center justify-center gap-2 sm:gap-3 text-sm sm:text-base shadow-lg hover:shadow-xl"
+                  className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400 text-white font-bold rounded-xl hover:from-pink-500 hover:via-purple-500 hover:to-pink-500 transition-all transform hover:scale-105 disabled:opacity-50 disabled:transform-none flex items-center justify-center gap-2 text-sm shadow-lg hover:shadow-xl"
                   whileHover={{ 
                     boxShadow: "0 10px 30px rgba(236, 72, 153, 0.3)",
                     scale: 1.02
@@ -382,14 +433,14 @@ const SignUp = ({ onClose, onSignIn, onSwitchToSignIn }) => {
                 >
                   {loading ? (
                     <>
-                      <div className="animate-spin w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full" />
+                      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
                       Creating your space...
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <Sparkles className="w-4 h-4" />
                       Start Your Journey
-                      <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <ArrowRight className="w-4 h-4" />
                     </>
                   )}
                 </motion.button>
@@ -399,7 +450,7 @@ const SignUp = ({ onClose, onSignIn, onSwitchToSignIn }) => {
                   <button
                     type="button"
                     onClick={handleSwitchToSignIn}
-                    className="text-gray-600 hover:text-gray-800 transition-colors text-xs sm:text-sm"
+                    className="text-gray-600 hover:text-gray-800 transition-colors text-xs"
                   >
                     Already have an account? 
                     <span className="text-pink-500 underline font-semibold ml-1 hover:text-pink-600">
@@ -410,35 +461,35 @@ const SignUp = ({ onClose, onSignIn, onSwitchToSignIn }) => {
               </form>
             </div>
 
-            {/* Gentle Decorative Elements */}
-            <div className="absolute top-3 sm:top-4 right-3 sm:right-4">
+            {/* Card Decorative Elements - Updated Emojis */}
+            <div className="absolute top-3 right-3">
               <motion.div
                 animate={{ 
                   rotate: [0, 10, -10, 0],
                   scale: [1, 1.1, 1]
                 }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="w-5 h-5 sm:w-6 sm:h-6 text-pink-300 opacity-60"
+                className="w-4 h-4 sm:w-5 sm:h-5 text-pink-300 opacity-60"
               >
-                🌸
+                🦋
               </motion.div>
             </div>
             
-            <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4">
+            <div className="absolute bottom-3 left-3">
               <motion.div
                 animate={{ 
                   scale: [1, 1.2, 1],
                   opacity: [0.4, 0.7, 0.4],
-                  rotate: [0, 5, -5, 0]
+                  rotate: [0, 360]
                 }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="w-6 h-6 sm:w-7 sm:h-7 text-purple-300 opacity-50"
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                className="w-4 h-4 sm:w-5 sm:h-5 text-purple-300 opacity-50"
               >
                 🌟
               </motion.div>
             </div>
 
-            <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
+            <div className="absolute top-3 left-3">
               <motion.div
                 animate={{ 
                   opacity: [0.3, 0.6, 0.3],
@@ -446,23 +497,22 @@ const SignUp = ({ onClose, onSignIn, onSwitchToSignIn }) => {
                   y: [0, -5, 0]
                 }}
                 transition={{ duration: 3, repeat: Infinity, delay: 1, ease: "easeInOut" }}
-                className="w-4 h-4 sm:w-5 sm:h-5 text-rose-300 opacity-40"
+                className="w-4 h-4 text-rose-300 opacity-40"
               >
-                💝
+                🌸
               </motion.div>
             </div>
 
-            {/* Additional gentle elements */}
-            <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4">
+            <div className="absolute bottom-3 right-3">
               <motion.div
                 animate={{ 
-                  rotate: [0, 360],
-                  scale: [1, 1.2, 1]
+                  rotate: [0, -360],
+                  scale: [1, 1.3, 1]
                 }}
                 transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                className="w-4 h-4 sm:w-5 sm:h-5 text-pink-200 opacity-30"
+                className="w-4 h-4 text-indigo-200 opacity-30"
               >
-                🦋
+                🔮
               </motion.div>
             </div>
           </div>
