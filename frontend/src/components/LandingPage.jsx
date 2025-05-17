@@ -8,6 +8,7 @@ import FloatingElements from './shared/FloatingElements';
 import SignIn from './SignIn';
 import SignUp from './SignUp';
 import Dashboard from './Dashboard';
+import { signUpUser, signInUser } from '../client';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -28,10 +29,17 @@ const LandingPage = () => {
     navigate('/pagebuilder');
   };
 
-  const handleSignIn = (userData) => {
+  const handleSignUp = async(userData) => {
+    console.log(userData);
+    await signUpUser(userData);
     setUser(userData);
-    setShowSignIn(false);
     setShowSignUp(false);
+  };
+
+  const handleSignIn = async(userData,r) => {
+    let user = await signInUser(userData);
+    setUser(user)
+    setShowSignIn(false);
   };
 
   const handleSignOut = () => {
@@ -227,7 +235,7 @@ const LandingPage = () => {
         {showSignUp && (
           <SignUp
             onClose={closeModals}
-            onSignIn={handleSignIn}
+            onSignIn={handleSignUp}
             onSwitchToSignIn={handleSwitchToSignIn}
           />
         )}

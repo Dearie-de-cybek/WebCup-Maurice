@@ -18,16 +18,17 @@ const SignIn = ({ onClose, onSignIn }) => {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate API call here Uche or Mike
+
+    // Play dark lord voice when submitting
+    playDarkLordVoice();
+
+    // Simulate API call for login
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Create user session in localStorage you can take this from localStorage guys
     const userData = {
-      id: Math.random().toString(36).substring(7),
-      name: formData.name || formData.email.split('@')[0],
       email: formData.email,
-      joinedAt: new Date().toISOString(),
-      lastLogin: new Date().toISOString()
+      password: formData.password
     };
 
     localStorage.setItem('theend_user', JSON.stringify(userData));

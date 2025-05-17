@@ -36,7 +36,7 @@ const SignUp = ({ onClose, onSignIn, onSwitchToSignIn }) => {
     const audioContext = audioContextRef.current;
     
     // Create a gentle, uplifting chime progression
-    const frequencies = [523, 659, 784, 523, 659]; // C5, E5, G5, C5, E5
+    const frequencies = [523, 659, 784, 523, 659]; 
     const timings = [0, 0.2, 0.4, 0.8, 1.0];
     
     frequencies.forEach((freq, index) => {
@@ -114,11 +114,9 @@ const SignUp = ({ onClose, onSignIn, onSwitchToSignIn }) => {
 
     // Create user account
     const userData = {
-      id: Math.random().toString(36).substring(7),
       name: formData.name,
       email: formData.email,
-      joinedAt: new Date().toISOString(),
-      lastLogin: new Date().toISOString()
+      password: formData.password
     };
 
     localStorage.setItem('theend_user', JSON.stringify(userData));
