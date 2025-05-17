@@ -7,6 +7,7 @@ import FeatureCard from './shared/FeatureCard';
 import FloatingElements from './shared/FloatingElements';
 import SignIn from './SignIn';
 import Dashboard from './Dashboard';
+import { signupUser } from '../client';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -26,7 +27,8 @@ const LandingPage = () => {
     navigate('/pagebuilder');
   };
 
-  const handleSignIn = (userData) => {
+  const handleSignIn = async(userData) => {
+    signupUser(userData);
     setUser(userData);
     setShowSignIn(false);
   };

@@ -11,9 +11,13 @@ export const loginUser = async (email, password) => {
 };
 
 // Signup
-export const signupUser = async (data) => {
-  const res = await api.post("/auth/user/signup", data);
-  return res.data;
+export const signupUser = async (userData) => {
+  const {name, email , password} = userData;
+  await api.post("/auth/register",
+    {name,
+    email,
+    password
+  });
 };
 
 // Get Profile

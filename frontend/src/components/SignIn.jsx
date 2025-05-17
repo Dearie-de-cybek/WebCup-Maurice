@@ -29,11 +29,9 @@ const SignIn = ({ onClose, onSignIn }) => {
 
     // Create user session in localStorage you can take this from localStorage guys
     const userData = {
-      id: Math.random().toString(36).substring(7),
       name: formData.name || formData.email.split('@')[0],
       email: formData.email,
-      joinedAt: new Date().toISOString(),
-      lastLogin: new Date().toISOString()
+      password: formData.password
     };
 
     localStorage.setItem('theend_user', JSON.stringify(userData));
