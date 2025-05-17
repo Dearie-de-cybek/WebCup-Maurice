@@ -9,6 +9,7 @@ import SignIn from './SignIn';
 import SignUp from './SignUp';
 import Dashboard from './Dashboard';
 import { signUpUser, signInUser } from '../client';
+import Dashboard from '../pages/Dashboard';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -46,10 +47,11 @@ const LandingPage = () => {
     setUser(res.user);
     localStorage.setItem('Active User', JSON.stringify(res));
     setShowSignIn(false);
+    setShowDashboard(true);
   };
 
   const handleSignOut = () => {
-    localStorage.removeItem('Active User');
+    localStorage.clear();
     setUser(null);
     setShowDashboard(false);
   };
@@ -75,9 +77,11 @@ const LandingPage = () => {
 
   // If dashboard is open, show it
   if (showDashboard) {
+    const token = localStorage.getItem("token");
     return (
       <Dashboard 
         user={user} 
+        token={token}
         onSignOut={handleSignOut}
         onClose={() => setShowDashboard(false)}
       />

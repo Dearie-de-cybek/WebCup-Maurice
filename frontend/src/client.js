@@ -9,8 +9,13 @@ export const signInUser = async (userData) => {
   const { email, password } = userData;
   try {
     const response = await api.post("/auth/login", { email, password });
-    const res = response.data; 
-    return res
+    const user = response.data;
+
+    // Store user data and token in local storage
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("token", user.token);
+
+    return user;
   } catch (error) {
     const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message;
     alert(`Login failed: ${errorMessage}`);
@@ -27,14 +32,23 @@ export const signUpUser = async (userData) => {
   } catch (error) {
     const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message;
     alert(`Sign Up failed: ${errorMessage}`);
-    return null;
-  }
+    return null;
+  }
 };
 
 // Get Profile
-export const getUserProfile = async () => {
-  const res = await api.get("/auth/profile");
-  return res.data;
+export const getUserPages = async (token) => {
+    try {
+    const response = await api.get("/pages/all", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data.pages
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+  
 };
 
 // Logout
