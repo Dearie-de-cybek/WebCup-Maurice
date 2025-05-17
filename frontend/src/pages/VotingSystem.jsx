@@ -1,11 +1,11 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import ThreeVotingUniverse from './components/ThreeVotingUniverse';
-import HallOfFameConstellations from './components/HallOfFameConstellations';
-import VotingInterface from './components/VotingInterface';
-import ParticleEffects from './components/ParticleEffects';
-import CosmicUI from './components/CosmicUI';
+import ThreeVotingUniverse from '../components/ThreeVotingUniverse';
+import HallOfFameConstellations from '../components/HallOfFameConstellations';
+import VotingInterface from '../pages/VotingInterface';
+import ParticleEffects from '../components/ParticleEffects';
+import CosmicUI from '../components/CosmicUI';
 
 const VotingSystem = () => {
   const [pages, setPages] = useState([

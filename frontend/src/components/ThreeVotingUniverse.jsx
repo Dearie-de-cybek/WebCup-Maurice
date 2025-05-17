@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import * as THREE from 'three';
 
@@ -9,123 +9,276 @@ const ThreeVotingUniverse = ({ pages, selectedPlanet, onPlanetSelect, cameraPosi
   const rendererRef = useRef(null);
   const cameraRef = useRef(null);
   const planetsRef = useRef([]);
-  const particleSystemsRef = useRef([]);
-  const composerRef = useRef(null);
+  const mixerRef = useRef(null);
+  const clockRef = useRef(new THREE.Clock());
 
-  // Custom shaders for mind-bending effects
+  // Professional shaders for sophisticated visual effects
   const planetVertexShader = `
+    uniform float time;
+    uniform float intensity;
     varying vec2 vUv;
     varying vec3 vNormal;
-    varying vec3 vPosition;
-    uniform float time;
-    uniform float voteIntensity;
+    varying vec3 vWorldPosition;
+    varying float vNoise;
+    
+    // Improved noise function
+    vec3 mod289(vec3 x) {
+      return x - floor(x * (1.0 / 289.0)) * 289.0;
+    }
+    
+    vec4 mod289(vec4 x) {
+      return x - floor(x * (1.0 / 289.0)) * 289.0;
+    }
+    
+    vec4 permute(vec4 x) {
+      return mod289(((x*34.0)+1.0)*x);
+    }
+    
+    vec4 taylorInvSqrt(vec4 r) {
+      return 1.79284291400159 - 0.85373472095314 * r;
+    }
+
+    float noise(vec3 v) {
+      const vec2 C = vec2(1.0/6.0, 1.0/3.0) ;
+      const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+      
+      vec3 i = floor(v + dot(v, C.yyy));
+      vec3 x0 = v - i + dot(i, C.xxx);
+      
+      vec3 g = step(x0.yzx, x0.xyz);
+      vec3 l = 1.0 - g;
+      vec3 i1 = min( g.xyz, l.zxy );
+      vec3 i2 = max( g.xyz, l.zxy );
+      
+      vec3 x1 = x0 - i1 + C.xxx;
+      vec3 x2 = x0 - i2 + C.yyy;
+      vec3 x3 = x0 - D.yyy;
+      
+      i = mod289(i);
+      vec4 p = permute( permute( permute(
+           i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
+         + i.y + vec4(0.0, i1.y, i2.y, 1.0 ))
+         + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
+      
+      float n_ = 0.142857142857;
+      vec3 ns = n_ * D.wyz - D.xzx;
+      
+      vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+      
+      vec4 x_ = floor(j * ns.z);
+      vec4 y_ = floor(j - 7.0 * x_ );
+      
+      vec4 x = x_ *ns.x + ns.yyyy;
+      vec4 y = y_ *ns.x + ns.yyyy;
+      vec4 h = 1.0 - abs(x) - abs(y);
+      
+      vec4 b0 = vec4( x.xy, y.xy );
+      vec4 b1 = vec4( x.zw, y.zw );
+      
+      vec4 s0 = floor(b0)*2.0 + 1.0;
+      vec4 s1 = floor(b1)*2.0 + 1.0;
+      vec4 sh = -step(h, vec4(0.0));
+      
+      vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;
+      vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;
+      
+      vec3 p0 = vec3(a0.xy,h.x);
+      vec3 p1 = vec3(a0.zw,h.y);
+      vec3 p2 = vec3(a1.xy,h.z);
+      vec3 p3 = vec3(a1.zw,h.w);
+      
+      vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
+      p0 *= norm.x;
+      p1 *= norm.y;
+      p2 *= norm.z;
+      p3 *= norm.w;
+      
+      vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+      m = m * m;
+      return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1),
+                                    dot(p2,x2), dot(p3,x3) ) );
+    }
     
     void main() {
       vUv = uv;
-      vNormal = normal;
-      vPosition = position;
+      vNormal = normalize(normalMatrix * normal);
       
       vec3 pos = position;
       
-      // Pulsating effect based on votes
-      float pulse = sin(time * 2.0 + voteIntensity * 5.0) * 0.1 * voteIntensity;
-      pos += normal * pulse;
+      // Subtle surface displacement
+      float noiseValue = noise(pos * 2.0 + time * 0.1) * 0.02;
+      vNoise = noiseValue;
+      pos += normal * noiseValue * intensity;
       
-      // Morphing effect
-      float morph = sin(time + position.x * 2.0) * 0.05;
-      pos.y += morph;
+      vec4 worldPosition = modelMatrix * vec4(pos, 1.0);
+      vWorldPosition = worldPosition.xyz;
       
       gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
     }
   `;
 
   const planetFragmentShader = `
-    varying vec2 vUv;
-    varying vec3 vNormal;
-    varying vec3 vPosition;
     uniform float time;
     uniform vec3 color;
-    uniform float voteIntensity;
+    uniform float intensity;
     uniform float isSelected;
     uniform float isHallOfFame;
+    uniform vec3 lightPosition;
     
-    // Noise function
-    float noise(vec3 p) {
-      return sin(p.x * 10.0) * cos(p.y * 10.0) * sin(p.z * 10.0);
-    }
+    varying vec2 vUv;
+    varying vec3 vNormal;
+    varying vec3 vWorldPosition;
+    varying float vNoise;
     
     void main() {
       vec3 baseColor = color;
       
-      // Animated surface patterns
-      float pattern = noise(vPosition + time * 0.5) * 0.3;
-      baseColor += pattern;
+      // Professional lighting model
+      vec3 lightDir = normalize(lightPosition - vWorldPosition);
+      vec3 viewDir = normalize(cameraPosition - vWorldPosition);
+      vec3 reflectDir = reflect(-lightDir, vNormal);
       
-      // Hall of fame golden glow
+      // Ambient
+      float ambient = 0.3;
+      
+      // Diffuse
+      float diffuse = max(dot(vNormal, lightDir), 0.0);
+      
+      // Specular with Fresnel
+      float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+      vec3 fresnel = vec3(0.04) + (1.0 - 0.04) * pow(1.0 - dot(viewDir, vNormal), 5.0);
+      vec3 specular = fresnel * spec;
+      
+      // Edge lighting for depth
+      float rim = 1.0 - dot(vNormal, viewDir);
+      rim = smoothstep(0.6, 1.0, rim);
+      
+      // Sophisticated color mixing
+      vec3 finalColor = baseColor * (ambient + diffuse * 0.8);
+      finalColor += specular * 0.5;
+      finalColor += rim * baseColor * 0.3;
+      
+      // Surface detail from noise
+      finalColor += vNoise * vec3(0.1);
+      
+      // Hall of Fame subtle gold tint
       if (isHallOfFame > 0.5) {
-        vec3 goldGlow = vec3(1.0, 0.8, 0.2);
-        float intensity = sin(time * 3.0) * 0.5 + 0.5;
-        baseColor = mix(baseColor, goldGlow, intensity * 0.4);
+        vec3 gold = vec3(1.0, 0.8, 0.2);
+        float blend = sin(time * 2.0) * 0.1 + 0.1;
+        finalColor = mix(finalColor, finalColor * gold, blend);
       }
       
-      // Selection highlight
+      // Selection highlight - very subtle
       if (isSelected > 0.5) {
-        vec3 highlight = vec3(1.0, 1.0, 1.0);
-        float rim = 1.0 - dot(vNormal, vec3(0.0, 0.0, 1.0));
-        baseColor = mix(baseColor, highlight, rim * 0.8);
+        finalColor += rim * vec3(1.0) * 0.2;
       }
       
-      // Vote intensity glow
-      baseColor += voteIntensity * vec3(1.0, 0.5, 0.2) * 0.5;
+      // Intensity boost for votes
+      finalColor *= (1.0 + intensity * 0.3);
       
-      // Fresnel effect
-      float fresnel = pow(1.0 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
-      baseColor += fresnel * vec3(0.3, 0.5, 1.0) * 0.3;
-      
-      gl_FragColor = vec4(baseColor, 1.0);
+      gl_FragColor = vec4(finalColor, 1.0);
     }
   `;
 
-  // Particle shader for cosmic dust
-  const particleVertexShader = `
-    attribute float size;
-    attribute vec3 color;
-    attribute float opacity;
-    varying vec3 vColor;
-    varying float vOpacity;
+  // Professional cosmic background shader
+  const cosmicVertexShader = `
+    varying vec2 vUv;
+    varying vec3 vPosition;
+    
+    void main() {
+      vUv = uv;
+      vPosition = position;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `;
+
+  const cosmicFragmentShader = `
     uniform float time;
+    uniform vec2 resolution;
+    varying vec2 vUv;
+    varying vec3 vPosition;
     
-    void main() {
-      vColor = color;
-      vOpacity = opacity;
-      
-      vec3 pos = position;
-      pos.x += sin(time + position.y * 2.0) * 0.5;
-      pos.y += cos(time + position.x * 2.0) * 0.5;
-      
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-      gl_PointSize = size;
+    // High-quality noise for nebula effects
+    float hash(vec2 p) {
+      vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+      p3 += dot(p3, p3.yzx + 33.33);
+      return fract((p3.x + p3.y) * p3.z);
     }
-  `;
-
-  const particleFragmentShader = `
-    varying vec3 vColor;
-    varying float vOpacity;
+    
+    float noise(vec2 p) {
+      vec2 i = floor(p);
+      vec2 f = fract(p);
+      vec2 u = f * f * (3.0 - 2.0 * f);
+      
+      return mix(mix(hash(i + vec2(0.0, 0.0)), 
+                     hash(i + vec2(1.0, 0.0)), u.x),
+                 mix(hash(i + vec2(0.0, 1.0)), 
+                     hash(i + vec2(1.0, 1.0)), u.x), u.y);
+    }
+    
+    float fbm(vec2 p) {
+      float value = 0.0;
+      float amplitude = 0.5;
+      float frequency = 1.0;
+      
+      for (int i = 0; i < 6; i++) {
+        value += amplitude * noise(frequency * p);
+        amplitude *= 0.5;
+        frequency *= 2.0;
+      }
+      return value;
+    }
     
     void main() {
-      float dist = distance(gl_PointCoord, vec2(0.5));
-      if (dist > 0.5) discard;
+      vec2 uv = vUv;
+      vec2 p = (uv - 0.5) * 2.0;
       
-      float alpha = (1.0 - dist * 2.0) * vOpacity;
-      gl_FragColor = vec4(vColor, alpha);
+      // Create sophisticated nebula
+      float nebula1 = fbm(p * 2.0 + time * 0.1);
+      float nebula2 = fbm(p * 3.0 - time * 0.05);
+      float nebula3 = fbm(p * 1.0 + time * 0.02);
+      
+      // Combine nebula layers
+      float combined = nebula1 * 0.5 + nebula2 * 0.3 + nebula3 * 0.2;
+      
+      // Subtle color palette inspired by space photography
+      vec3 color1 = vec3(0.1, 0.1, 0.3);  // Deep space blue
+      vec3 color2 = vec3(0.3, 0.1, 0.5);  // Purple nebula
+      vec3 color3 = vec3(0.1, 0.2, 0.4);  // Cosmic blue
+      
+      vec3 finalColor = mix(color1, color2, combined);
+      finalColor = mix(finalColor, color3, fbm(p * 0.5));
+      
+      // Add depth based on distance from center
+      float vignette = 1.0 - length(p) * 0.5;
+      finalColor *= vignette;
+      
+      // Very subtle brightness
+      finalColor *= 0.7;
+      
+      gl_FragColor = vec4(finalColor, 1.0);
     }
   `;
 
   useEffect(() => {
-    initThreeScene();
+    initScene();
     animate();
     
+    const handleResize = () => {
+      if (rendererRef.current && cameraRef.current) {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        
+        cameraRef.current.aspect = width / height;
+        cameraRef.current.updateProjectionMatrix();
+        rendererRef.current.setSize(width, height);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    
     return () => {
+      window.removeEventListener('resize', handleResize);
       if (mountRef.current && rendererRef.current) {
         mountRef.current.removeChild(rendererRef.current.domElement);
       }
@@ -136,90 +289,189 @@ const ThreeVotingUniverse = ({ pages, selectedPlanet, onPlanetSelect, cameraPosi
   }, []);
 
   useEffect(() => {
-    // Update camera position smoothly
-    if (cameraRef.current) {
-      const camera = cameraRef.current;
-      const targetPos = new THREE.Vector3(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-      
-      const animateCamera = () => {
-        camera.position.lerp(targetPos, 0.05);
-        camera.lookAt(0, 0, 0);
-        
-        if (camera.position.distanceTo(targetPos) > 0.1) {
-          requestAnimationFrame(animateCamera);
-        }
-      };
-      animateCamera();
-    }
+    updateCameraPosition();
   }, [cameraPosition]);
 
   useEffect(() => {
-    // Trigger vote effect animations
-    if (voteEffect && planetsRef.current[voteEffect - 1]) {
-      const planet = planetsRef.current[voteEffect - 1];
-      if (planet.material.uniforms) {
-        planet.material.uniforms.voteIntensity.value = 2.0;
-        
-        // Animate back to normal
-        const animate = () => {
-          planet.material.uniforms.voteIntensity.value *= 0.95;
-          if (planet.material.uniforms.voteIntensity.value > 0.1) {
-            requestAnimationFrame(animate);
-          }
-        };
-        setTimeout(animate, 100);
-      }
+    if (voteEffect && planetsRef.current) {
+      triggerVoteEffect(voteEffect);
     }
   }, [voteEffect]);
 
-  const initThreeScene = () => {
-    // Scene setup
+  const initScene = () => {
+    // Scene setup with professional settings
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ 
+      antialias: true, 
+      alpha: true,
+      powerPreference: "high-performance"
+    });
     
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setClearColor(0x000000, 0);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
     
     mountRef.current.appendChild(renderer.domElement);
 
-    // Camera position
-    camera.position.set(0, 5, 15);
-    camera.lookAt(0, 0, 0);
-
-    // Lighting setup
+    // Professional lighting setup
     const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
     directionalLight.position.set(10, 10, 5);
     directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.width = 2048;
+    directionalLight.shadow.mapSize.height = 2048;
+    directionalLight.shadow.camera.near = 0.5;
+    directionalLight.shadow.camera.far = 50;
     scene.add(directionalLight);
 
-    // Create cosmic background
+    // Add subtle rim lighting
+    const rimLight = new THREE.DirectionalLight(0x88bbff, 0.5);
+    rimLight.position.set(-10, 0, -10);
+    scene.add(rimLight);
+
+    // Create sophisticated cosmic background
     createCosmicBackground(scene);
 
-    // Create planets for each page
-    pages.forEach((page, index) => {
-      const planet = createPlanet(page, scene);
-      planetsRef.current[index] = planet;
-      scene.add(planet);
-    });
+    // Create professional planets
+    createPlanets(scene);
 
-    // Create particle systems
-    createParticleSystems(scene);
-
-    // Add space nebula
-    createSpaceNebula(scene);
+    // Create subtle star field
+    createStarField(scene);
 
     // Store references
     sceneRef.current = scene;
     rendererRef.current = renderer;
     cameraRef.current = camera;
 
-    // Add click handlers
+    // Set initial camera position
+    camera.position.set(0, 5, 20);
+    camera.lookAt(0, 0, 0);
+
+    // Add interaction handlers
+    setupInteractions(renderer, camera, scene);
+  };
+
+  const createCosmicBackground = (scene) => {
+    const geometry = new THREE.PlaneGeometry(200, 200);
+    const material = new THREE.ShaderMaterial({
+      vertexShader: cosmicVertexShader,
+      fragmentShader: cosmicFragmentShader,
+      uniforms: {
+        time: { value: 0 },
+        resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+      },
+      side: THREE.DoubleSide
+    });
+
+    const cosmic = new THREE.Mesh(geometry, material);
+    cosmic.position.z = -100;
+    scene.add(cosmic);
+  };
+
+  const createPlanets = (scene) => {
+    planetsRef.current = pages.map((page, index) => {
+      // High-quality geometry
+      const geometry = new THREE.IcosahedronGeometry(page.size || 1, 3);
+      
+      // Professional material with custom shaders
+      const material = new THREE.ShaderMaterial({
+        vertexShader: planetVertexShader,
+        fragmentShader: planetFragmentShader,
+        uniforms: {
+          time: { value: 0 },
+          color: { value: new THREE.Color(page.color) },
+          intensity: { value: page.votes / 2000 },
+          isSelected: { value: 0 },
+          isHallOfFame: { value: page.isHallOfFame ? 1 : 0 },
+          lightPosition: { value: new THREE.Vector3(10, 10, 5) }
+        }
+      });
+
+      const planet = new THREE.Mesh(geometry, material);
+      planet.position.set(
+        page.position?.x || (index - 2) * 6,
+        page.position?.y || 0,
+        page.position?.z || 0
+      );
+      planet.castShadow = true;
+      planet.receiveShadow = true;
+      planet.userData = { pageIndex: index, page };
+
+      // Add subtle orbital ring for hall of fame
+      if (page.isHallOfFame) {
+        const ringGeometry = new THREE.RingGeometry(page.size * 1.8, page.size * 2.2, 64);
+        const ringMaterial = new THREE.MeshBasicMaterial({
+          color: 0xffd700,
+          transparent: true,
+          opacity: 0.15,
+          side: THREE.DoubleSide
+        });
+        const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+        ring.rotation.x = Math.PI / 2 + (Math.random() - 0.5) * 0.5;
+        ring.rotation.z = (Math.random() - 0.5) * 0.5;
+        planet.add(ring);
+      }
+
+      scene.add(planet);
+      return planet;
+    });
+  };
+
+  const createStarField = (scene) => {
+    const starGeometry = new THREE.BufferGeometry();
+    const starCount = 5000;
+    const positions = new Float32Array(starCount * 3);
+    const colors = new Float32Array(starCount * 3);
+
+    for (let i = 0; i < starCount; i++) {
+      // Position stars in sphere around scene
+      const radius = 500;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+
+      positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+      positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+      positions[i * 3 + 2] = radius * Math.cos(phi);
+
+      // Subtle stellar colors
+      const temp = Math.random();
+      const color = new THREE.Color();
+      if (temp < 0.4) {
+        color.setHSL(0.6, 0.2, 0.8); // Blue-white stars
+      } else if (temp < 0.8) {
+        color.setHSL(0.1, 0.1, 0.9); // White stars
+      } else {
+        color.setHSL(0.08, 0.3, 0.7); // Yellow stars
+      }
+
+      colors[i * 3] = color.r;
+      colors[i * 3 + 1] = color.g;
+      colors[i * 3 + 2] = color.b;
+    }
+
+    starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    starGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const starMaterial = new THREE.PointsMaterial({
+      size: 1,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.8
+    });
+
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    scene.add(stars);
+  };
+
+  const setupInteractions = (renderer, camera, scene) => {
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
@@ -231,257 +483,112 @@ const ThreeVotingUniverse = ({ pages, selectedPlanet, onPlanetSelect, cameraPosi
       const intersects = raycaster.intersectObjects(planetsRef.current);
 
       if (intersects.length > 0) {
-        const clickedPlanet = intersects[0].object;
-        const pageIndex = planetsRef.current.indexOf(clickedPlanet);
-        if (pageIndex !== -1) {
-          onPlanetSelect(pages[pageIndex]);
-        }
+        const planet = intersects[0].object;
+        const pageData = planet.userData.page;
+        onPlanetSelect(pageData);
       }
     };
 
     renderer.domElement.addEventListener('click', onMouseClick);
-
-    // Handle resize
-    const onResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    };
-    window.addEventListener('resize', onResize);
-  };
-
-  const createPlanet = (page, scene) => {
-    // Create complex geometry with subdivisions
-    const geometry = new THREE.IcosahedronGeometry(page.size, 2);
     
-    // Create custom material with shaders
-    const material = new THREE.ShaderMaterial({
-      vertexShader: planetVertexShader,
-      fragmentShader: planetFragmentShader,
-      uniforms: {
-        time: { value: 0 },
-        color: { value: new THREE.Color(page.color) },
-        voteIntensity: { value: page.votes / 1000 },
-        isSelected: { value: 0 },
-        isHallOfFame: { value: page.isHallOfFame ? 1 : 0 }
-      },
-      transparent: true
-    });
+    // Add hover effects
+    const onMouseMove = (event) => {
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    const planet = new THREE.Mesh(geometry, material);
-    planet.position.set(page.position.x, page.position.y, page.position.z);
-    planet.castShadow = true;
-    planet.receiveShadow = true;
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(planetsRef.current);
 
-    // Add planetary rings for hall of fame
-    if (page.isHallOfFame) {
-      const ringGeometry = new THREE.RingGeometry(page.size * 1.5, page.size * 2, 32);
-      const ringMaterial = new THREE.MeshBasicMaterial({
-        color: 0xffd700,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.3
+      // Reset all planets
+      planetsRef.current.forEach(planet => {
+        if (planet.material.uniforms) {
+          planet.material.uniforms.intensity.value = planet.userData.page.votes / 2000;
+        }
       });
-      const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-      ring.rotation.x = Math.PI / 2;
-      planet.add(ring);
-    }
 
-    // Add orbital particles
-    createOrbitParticles(planet, page);
-
-    return planet;
-  };
-
-  const createOrbitParticles = (planet, page) => {
-    const particleCount = 200;
-    const positions = new Float32Array(particleCount * 3);
-    const colors = new Float32Array(particleCount * 3);
-    const sizes = new Float32Array(particleCount);
-
-    for (let i = 0; i < particleCount; i++) {
-      const angle = (i / particleCount) * Math.PI * 2;
-      const radius = page.size + 0.5 + Math.random() * 1;
-      
-      positions[i * 3] = Math.cos(angle) * radius;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 0.5;
-      positions[i * 3 + 2] = Math.sin(angle) * radius;
-
-      const color = new THREE.Color(page.color);
-      colors[i * 3] = color.r;
-      colors[i * 3 + 1] = color.g;
-      colors[i * 3 + 2] = color.b;
-
-      sizes[i] = Math.random() * 3 + 1;
-    }
-
-    const orbitalGeometry = new THREE.BufferGeometry();
-    orbitalGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    orbitalGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    orbitalGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-
-    const orbitalMaterial = new THREE.ShaderMaterial({
-      vertexShader: particleVertexShader,
-      fragmentShader: particleFragmentShader,
-      uniforms: {
-        time: { value: 0 }
-      },
-      transparent: true,
-      depthWrite: false
-    });
-
-    const orbitalParticles = new THREE.Points(orbitalGeometry, orbitalMaterial);
-    planet.add(orbitalParticles);
-  };
-
-  const createCosmicBackground = (scene) => {
-    // Create starfield
-    const starGeometry = new THREE.BufferGeometry();
-    const starCount = 10000;
-    const positions = new Float32Array(starCount * 3);
-    const colors = new Float32Array(starCount * 3);
-
-    for (let i = 0; i < starCount; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 2000;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 2000;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 2000;
-
-      const color = new THREE.Color();
-      color.setHSL(Math.random() * 0.2 + 0.5, 0.55, Math.random() * 0.25 + 0.55);
-      colors[i * 3] = color.r;
-      colors[i * 3 + 1] = color.g;
-      colors[i * 3 + 2] = color.b;
-    }
-
-    starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    starGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-    const starMaterial = new THREE.PointsMaterial({
-      size: 2,
-      vertexColors: true,
-      transparent: true
-    });
-
-    const stars = new THREE.Points(starGeometry, starMaterial);
-    scene.add(stars);
-  };
-
-  const createParticleSystems = (scene) => {
-    // Create cosmic dust clouds
-    for (let i = 0; i < 5; i++) {
-      const dustGeometry = new THREE.BufferGeometry();
-      const dustCount = 1000;
-      const positions = new Float32Array(dustCount * 3);
-      const colors = new Float32Array(dustCount * 3);
-      const sizes = new Float32Array(dustCount);
-      const opacities = new Float32Array(dustCount);
-
-      for (let j = 0; j < dustCount; j++) {
-        positions[j * 3] = (Math.random() - 0.5) * 100;
-        positions[j * 3 + 1] = (Math.random() - 0.5) * 100;
-        positions[j * 3 + 2] = (Math.random() - 0.5) * 100;
-
-        const color = new THREE.Color();
-        color.setHSL(0.15 + Math.random() * 0.1, 0.8, 0.5);
-        colors[j * 3] = color.r;
-        colors[j * 3 + 1] = color.g;
-        colors[j * 3 + 2] = color.b;
-
-        sizes[j] = Math.random() * 5 + 1;
-        opacities[j] = Math.random() * 0.5 + 0.2;
+      // Highlight hovered planet
+      if (intersects.length > 0) {
+        const planet = intersects[0].object;
+        if (planet.material.uniforms) {
+          planet.material.uniforms.intensity.value = (planet.userData.page.votes / 2000) + 0.5;
+        }
+        renderer.domElement.style.cursor = 'pointer';
+      } else {
+        renderer.domElement.style.cursor = 'default';
       }
+    };
 
-      dustGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      dustGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-      dustGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-      dustGeometry.setAttribute('opacity', new THREE.BufferAttribute(opacities, 1));
+    renderer.domElement.addEventListener('mousemove', onMouseMove);
+  };
 
-      const dustMaterial = new THREE.ShaderMaterial({
-        vertexShader: particleVertexShader,
-        fragmentShader: particleFragmentShader,
-        uniforms: {
-          time: { value: 0 }
-        },
-        transparent: true,
-        depthWrite: false
-      });
+  const updateCameraPosition = () => {
+    if (cameraRef.current && cameraPosition) {
+      const camera = cameraRef.current;
+      const targetPosition = new THREE.Vector3(
+        cameraPosition.x || 0,
+        cameraPosition.y || 5,
+        cameraPosition.z || 20
+      );
 
-      const dust = new THREE.Points(dustGeometry, dustMaterial);
-      scene.add(dust);
-      particleSystemsRef.current.push(dust);
+      // Smooth camera transition
+      const animateCamera = () => {
+        camera.position.lerp(targetPosition, 0.02);
+        camera.lookAt(0, 0, 0);
+
+        if (camera.position.distanceTo(targetPosition) > 0.1) {
+          requestAnimationFrame(animateCamera);
+        }
+      };
+      animateCamera();
     }
   };
 
-  const createSpaceNebula = (scene) => {
-    // Create volumetric nebula effect
-    const nebulaGeometry = new THREE.PlaneGeometry(200, 200, 32, 32);
-    
-    const nebulaMaterial = new THREE.ShaderMaterial({
-      vertexShader: `
-        varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  const triggerVoteEffect = (pageId) => {
+    const planet = planetsRef.current.find(p => p.userData.page.id === pageId);
+    if (planet && planet.material.uniforms) {
+      // Subtle vote effect
+      planet.material.uniforms.intensity.value += 1;
+      
+      // Animate back to normal
+      const animate = () => {
+        planet.material.uniforms.intensity.value *= 0.98;
+        if (planet.material.uniforms.intensity.value > planet.userData.page.votes / 2000 + 0.1) {
+          requestAnimationFrame(animate);
         }
-      `,
-      fragmentShader: `
-        varying vec2 vUv;
-        uniform float time;
-        
-        float noise(vec2 p) {
-          return sin(p.x * 6.0) * cos(p.y * 6.0) * sin(time * 0.1);
-        }
-        
-        void main() {
-          vec2 center = vUv - 0.5;
-          float dist = length(center);
-          
-          float nebula = noise(vUv * 5.0 + time * 0.1) * 0.5 + 0.5;
-          nebula *= (1.0 - smoothstep(0.0, 0.5, dist));
-          
-          vec3 color1 = vec3(0.8, 0.2, 1.0);
-          vec3 color2 = vec3(0.2, 0.8, 1.0);
-          vec3 color = mix(color1, color2, nebula);
-          
-          gl_FragColor = vec4(color, nebula * 0.3);
-        }
-      `,
-      uniforms: {
-        time: { value: 0 }
-      },
-      transparent: true,
-      side: THREE.DoubleSide
-    });
-
-    const nebula = new THREE.Mesh(nebulaGeometry, nebulaMaterial);
-    nebula.position.z = -50;
-    scene.add(nebula);
+      };
+      setTimeout(animate, 100);
+    }
   };
 
   const animate = () => {
-    const time = Date.now() * 0.001;
+    const clock = clockRef.current;
+    const elapsedTime = clock.getElapsedTime();
 
-    // Update planet rotations and shader uniforms
+    // Update shader uniforms
+    if (sceneRef.current) {
+      sceneRef.current.traverse((child) => {
+        if (child.material && child.material.uniforms) {
+          if (child.material.uniforms.time) {
+            child.material.uniforms.time.value = elapsedTime;
+          }
+        }
+      });
+    }
+
+    // Subtle planetary rotations
     planetsRef.current.forEach((planet, index) => {
-      if (planet && planet.material.uniforms) {
-        planet.rotation.y += 0.01;
-        planet.material.uniforms.time.value = time;
+      if (planet) {
+        planet.rotation.y += 0.002 + (index * 0.0005);
         
         // Update selection state
-        const isSelected = selectedPlanet && selectedPlanet.id === pages[index].id;
-        planet.material.uniforms.isSelected.value = isSelected ? 1 : 0;
+        if (planet.material.uniforms) {
+          const isSelected = selectedPlanet && selectedPlanet.id === planet.userData.page.id;
+          planet.material.uniforms.isSelected.value = isSelected ? 1 : 0;
+        }
       }
     });
 
-    // Update particle systems
-    particleSystemsRef.current.forEach(system => {
-      if (system.material.uniforms) {
-        system.material.uniforms.time.value = time;
-      }
-      system.rotation.y += 0.002;
-    });
-
-    // Render the scene
+    // Render
     if (rendererRef.current && sceneRef.current && cameraRef.current) {
       rendererRef.current.render(sceneRef.current, cameraRef.current);
     }
@@ -489,7 +596,23 @@ const ThreeVotingUniverse = ({ pages, selectedPlanet, onPlanetSelect, cameraPosi
     requestAnimationFrame(animate);
   };
 
-  return <div ref={mountRef} className="absolute inset-0" />;
+  return (
+    <div className="absolute inset-0">
+      <div ref={mountRef} className="w-full h-full" />
+      
+      {/* Professional loading indicator */}
+      <motion.div
+        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+        initial={{ opacity: 1 }}
+        animate={{ opacity: 0 }}
+        transition={{ delay: 2, duration: 1 }}
+      >
+        <div className="text-white/20 text-lg font-light">
+          Rendering Universe...
+        </div>
+      </motion.div>
+    </div>
+  );
 };
 
 export default ThreeVotingUniverse;
