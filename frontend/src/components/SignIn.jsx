@@ -18,6 +18,12 @@ const SignIn = ({ onClose, onSignIn }) => {
     e.preventDefault();
     setLoading(true);
 
+    if(!isLogin && formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+
     // Simulate API call here Uche or Mike
     await new Promise(resolve => setTimeout(resolve, 2000));
 
