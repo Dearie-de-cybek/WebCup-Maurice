@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, ArrowRight, Crown, Eye, Calendar } from 'lucide-react';
 
-const VotingInterface = ({ pages, userVotes, onVote, selectedPlanet }) => {
+const ProfessionalVotingInterface = ({ pages, userVotes, onVote, selectedPlanet }) => {
   const titleRef = useRef(null);
   const statsRef = useRef(null);
 
@@ -338,4 +338,4 @@ const VotingInterface = ({ pages, userVotes, onVote, selectedPlanet }) => {
   );
 };
 
-export default VotingInterface;
+export default ProfessionalVotingInterface;

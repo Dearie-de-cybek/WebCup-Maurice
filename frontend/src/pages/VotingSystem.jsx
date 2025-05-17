@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-// Import the new professional components
-import ProfessionalVotingInterface from '../components/ProfessionalVotingInterface';
+import ProfessionalVotingInterface from './ProfessionalVotingInterface';
 import ProfessionalThreeUniverse from '../components/ProfessionalThreeUniverse';
 import ProfessionalModal from '../components/ProfessionalModal';
 import ProfessionalConstellation from '../components/ProfessionalConstellation';
