@@ -9,24 +9,28 @@ export const signInUser = async (userData) => {
   const { email, password } = userData;
   try {
     const response = await api.post("/auth/login", { email, password });
-    const res = response.data; 
-    return res
+    const user = response.data;
+
+    // Store user data and token in local storage
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("token", user.token);
+
+    return user;
   } catch (error) {
-    const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message;
+    const errorMessage = error.response?.data?.error || error.message || "Login failed";
     alert(`Login failed: ${errorMessage}`);
+    console.error("Login failed:", errorMessage);
     return null;
   }
 };
 
 // Signup
 export const signUpUser = async (userData) => {
+  console.log(userData)
   const {name, email , password} = userData;
    try {
-    const res = await api.post("/auth/register", {name, email, password });
-    return res
+    await api.post("/auth/register", {name, email, password });
   } catch (error) {
-    const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message;
-    alert(`Sign Up failed: ${errorMessage}`);
     return null;
   }
 };
