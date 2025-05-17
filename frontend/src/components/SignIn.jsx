@@ -1,9 +1,9 @@
-import {useState, useEffect, useRef} from "react";
+import { useState, useEffect, useRef } from 'react';
 
 const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [mousePosition, setMousePosition] = useState({x: 0, y: 0});
-  const [followerPosition, setFollowerPosition] = useState({x: 0, y: 0});
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [followerPosition, setFollowerPosition] = useState({ x: 0, y: 0 });
   const cursorRef = useRef(null);
   const followerRef = useRef(null);
   const emojiContainerRef = useRef(null);
@@ -11,19 +11,19 @@ const SignIn = () => {
   // Mouse tracking for custom cursor
   useEffect(() => {
     const handleMouseMove = (e) => {
-      setMousePosition({x: e.clientX, y: e.clientY});
+      setMousePosition({ x: e.clientX, y: e.clientY });
     };
 
-    document.addEventListener("mousemove", handleMouseMove);
-    return () => document.removeEventListener("mousemove", handleMouseMove);
+    document.addEventListener('mousemove', handleMouseMove);
+    return () => document.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   // Animate follower cursor
   useEffect(() => {
     const animateFollower = () => {
-      setFollowerPosition((prev) => ({
+      setFollowerPosition(prev => ({
         x: prev.x + (mousePosition.x - prev.x) * 0.1,
-        y: prev.y + (mousePosition.y - prev.y) * 0.1,
+        y: prev.y + (mousePosition.y - prev.y) * 0.1
       }));
       requestAnimationFrame(animateFollower);
     };
@@ -32,26 +32,26 @@ const SignIn = () => {
 
   // Floating emojis
   useEffect(() => {
-    const emojis = ["💔", "😎", "😭", "🔥", "🍷", "🫠", "🧨", "🎤", "🚪"];
-
+    const emojis = ['💔', '😎', '😭', '🔥', '🍷', '🫠', '🧨', '🎤', '🚪'];
+    
     const createFloatingEmoji = () => {
       if (!emojiContainerRef.current) return;
-
-      const emoji = document.createElement("div");
-      emoji.className = "floating-emoji";
+      
+      const emoji = document.createElement('div');
+      emoji.className = 'floating-emoji';
       emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-      emoji.style.left = Math.random() * 100 + "vw";
-      emoji.style.animationDuration = Math.random() * 8 + 10 + "s";
-      emoji.style.animationDelay = Math.random() * 2 + "s";
-
-      emoji.addEventListener("mouseenter", () => {
-        emoji.style.transform = "scale(1.5) rotate(180deg)";
-        emoji.style.opacity = "1";
+      emoji.style.left = Math.random() * 100 + 'vw';
+      emoji.style.animationDuration = (Math.random() * 8 + 10) + 's';
+      emoji.style.animationDelay = Math.random() * 2 + 's';
+      
+      emoji.addEventListener('mouseenter', () => {
+        emoji.style.transform = 'scale(1.5) rotate(180deg)';
+        emoji.style.opacity = '1';
       });
 
-      emoji.addEventListener("mouseleave", () => {
-        emoji.style.transform = "scale(1) rotate(0deg)";
-        emoji.style.opacity = "0.6";
+      emoji.addEventListener('mouseleave', () => {
+        emoji.style.transform = 'scale(1) rotate(0deg)';
+        emoji.style.opacity = '0.6';
       });
 
       emojiContainerRef.current.appendChild(emoji);
@@ -75,53 +75,44 @@ const SignIn = () => {
   // Parallax effect
   useEffect(() => {
     const handleMouseMove = (e) => {
-      const shapes = document.querySelectorAll(".shape");
+      const shapes = document.querySelectorAll('.shape');
       const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
       const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
-
+      
       shapes.forEach((shape, index) => {
         const speed = (index + 1) * 0.5;
-        shape.style.transform = `translate(${xAxis * speed}px, ${
-          yAxis * speed
-        }px)`;
+        shape.style.transform = `translate(${xAxis * speed}px, ${yAxis * speed}px)`;
       });
     };
 
-    document.addEventListener("mousemove", handleMouseMove);
-    return () => document.removeEventListener("mousemove", handleMouseMove);
+    document.addEventListener('mousemove', handleMouseMove);
+    return () => document.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
+    
     // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    // Simulate login - in real app, validate credentials here
-    const userData = {
-      email: formData.email,
-      password: formData.password
-    };
-
-    localStorage.setItem('theend_user', JSON.stringify(userData));
-    setLoading(false);
-    onSignIn(userData);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    alert('Welcome back to TheEnd.page! Time to create your dramatic goodbye! 🎭');
+    setIsLoading(false);
   };
 
   const handleFocus = (e) => {
-    const wrapper = e.target.closest(".input-wrapper");
+    const wrapper = e.target.closest('.input-wrapper');
     if (wrapper) {
-      wrapper.style.boxShadow = "0 0 25px rgba(255, 71, 87, 0.3)";
-      wrapper.style.transform = "translateY(-2px)";
+      wrapper.style.boxShadow = '0 0 25px rgba(255, 71, 87, 0.3)';
+      wrapper.style.transform = 'translateY(-2px)';
     }
   };
 
   const handleBlur = (e) => {
-    const wrapper = e.target.closest(".input-wrapper");
+    const wrapper = e.target.closest('.input-wrapper');
     if (wrapper) {
-      wrapper.style.boxShadow = "none";
-      wrapper.style.transform = "translateY(0)";
+      wrapper.style.boxShadow = 'none';
+      wrapper.style.transform = 'translateY(0)';
     }
   };
 
@@ -133,10 +124,10 @@ const SignIn = () => {
   };
 
   return (
-    <div style={{cursor: "none"}}>
+    <div style={{ cursor: 'none' }}>
       <style jsx>{`
-        @import url("https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap");
-
+        @import url('https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+        
         :root {
           --primary-red: #ff4757;
           --primary-yellow: #ffd32a;
@@ -157,7 +148,7 @@ const SignIn = () => {
         }
 
         body {
-          font-family: "Inter", sans-serif;
+          font-family: 'Inter', sans-serif;
           background: var(--dark-bg);
           min-height: 100vh;
           overflow-x: hidden;
@@ -178,11 +169,7 @@ const SignIn = () => {
           position: fixed;
           width: 40px;
           height: 40px;
-          background: radial-gradient(
-            circle,
-            rgba(255, 71, 87, 0.2),
-            transparent
-          );
+          background: radial-gradient(circle, rgba(255, 71, 87, 0.2), transparent);
           border-radius: 50%;
           pointer-events: none;
           z-index: 9998;
@@ -196,11 +183,7 @@ const SignIn = () => {
           width: 100vw;
           height: 100vh;
           z-index: 1;
-          background: radial-gradient(
-            ellipse at center,
-            #1a1a2e 0%,
-            #0f0f12 70%
-          );
+          background: radial-gradient(ellipse at center, #1a1a2e 0%, #0f0f12 70%);
         }
 
         .bg-shapes {
@@ -220,11 +203,7 @@ const SignIn = () => {
         .shape-1 {
           width: 400px;
           height: 400px;
-          background: radial-gradient(
-            circle,
-            rgba(255, 71, 87, 0.1),
-            transparent
-          );
+          background: radial-gradient(circle, rgba(255, 71, 87, 0.1), transparent);
           top: 20%;
           left: -10%;
           animation-duration: 25s;
@@ -233,11 +212,7 @@ const SignIn = () => {
         .shape-2 {
           width: 300px;
           height: 300px;
-          background: radial-gradient(
-            circle,
-            rgba(168, 85, 247, 0.1),
-            transparent
-          );
+          background: radial-gradient(circle, rgba(168, 85, 247, 0.1), transparent);
           top: 60%;
           right: -10%;
           animation-duration: 30s;
@@ -247,30 +222,17 @@ const SignIn = () => {
         .shape-3 {
           width: 500px;
           height: 500px;
-          background: radial-gradient(
-            circle,
-            rgba(255, 211, 42, 0.05),
-            transparent
-          );
+          background: radial-gradient(circle, rgba(255, 211, 42, 0.05), transparent);
           top: -20%;
           right: 20%;
           animation-duration: 35s;
         }
 
         @keyframes float-shapes {
-          0%,
-          100% {
-            transform: rotate(0deg) translate(0px) rotate(0deg);
-          }
-          25% {
-            transform: rotate(90deg) translate(50px) rotate(-90deg);
-          }
-          50% {
-            transform: rotate(180deg) translate(0px) rotate(-180deg);
-          }
-          75% {
-            transform: rotate(270deg) translate(-50px) rotate(-270deg);
-          }
+          0%, 100% { transform: rotate(0deg) translate(0px) rotate(0deg); }
+          25% { transform: rotate(90deg) translate(50px) rotate(-90deg); }
+          50% { transform: rotate(180deg) translate(0px) rotate(-180deg); }
+          75% { transform: rotate(270deg) translate(-50px) rotate(-270deg); }
         }
 
         .emoji-container {
@@ -339,41 +301,33 @@ const SignIn = () => {
           overflow: hidden;
           transform: perspective(1000px) rotateX(5deg) rotateY(-5deg);
           transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-          box-shadow: 0 25px 50px var(--shadow-dark),
+          box-shadow: 
+            0 25px 50px var(--shadow-dark),
             inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
         .auth-card:hover {
-          transform: perspective(1000px) rotateX(0deg) rotateY(0deg)
-            translateY(-10px);
-          box-shadow: 0 35px 70px var(--shadow-dark),
-            0 0 50px var(--shadow-light), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(-10px);
+          box-shadow: 
+            0 35px 70px var(--shadow-dark),
+            0 0 50px var(--shadow-light),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
         .auth-card::before {
-          content: "";
+          content: '';
           position: absolute;
           top: 0;
           left: 0;
           right: 0;
           height: 1px;
-          background: linear-gradient(
-            90deg,
-            transparent,
-            var(--primary-red),
-            transparent
-          );
+          background: linear-gradient(90deg, transparent, var(--primary-red), transparent);
           animation: shimmer 3s infinite;
         }
 
         @keyframes shimmer {
-          0%,
-          100% {
-            opacity: 0;
-          }
-          50% {
-            opacity: 1;
-          }
+          0%, 100% { opacity: 0; }
+          50% { opacity: 1; }
         }
 
         .brand-section {
@@ -382,14 +336,10 @@ const SignIn = () => {
         }
 
         .logo {
-          font-family: "Clash Display", sans-serif;
+          font-family: 'Clash Display', sans-serif;
           font-size: 2.5rem;
           font-weight: 700;
-          background: linear-gradient(
-            135deg,
-            var(--primary-red),
-            var(--primary-yellow)
-          );
+          background: linear-gradient(135deg, var(--primary-red), var(--primary-yellow));
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -398,17 +348,12 @@ const SignIn = () => {
         }
 
         @keyframes gradient-shift {
-          0%,
-          100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
         }
 
         .page-title {
-          font-family: "Clash Display", sans-serif;
+          font-family: 'Clash Display', sans-serif;
           font-size: 1.8rem;
           font-weight: 600;
           color: var(--text-primary);
@@ -483,18 +428,13 @@ const SignIn = () => {
         }
 
         .input-wrapper::after {
-          content: "";
+          content: '';
           position: absolute;
           top: 0;
           left: -100%;
           width: 100%;
           height: 100%;
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255, 71, 87, 0.1),
-            transparent
-          );
+          background: linear-gradient(90deg, transparent, rgba(255, 71, 87, 0.1), transparent);
           transition: left 0.5s ease;
           z-index: 1;
         }
@@ -522,11 +462,7 @@ const SignIn = () => {
         .submit-btn {
           width: 100%;
           padding: 1.2rem;
-          background: linear-gradient(
-            135deg,
-            var(--primary-red),
-            var(--primary-yellow)
-          );
+          background: linear-gradient(135deg, var(--primary-red), var(--primary-yellow));
           border: none;
           border-radius: 12px;
           color: #000;
@@ -540,17 +476,13 @@ const SignIn = () => {
         }
 
         .submit-btn::before {
-          content: "";
+          content: '';
           position: absolute;
           top: 0;
           left: -100%;
           width: 100%;
           height: 100%;
-          background: linear-gradient(
-            135deg,
-            var(--primary-yellow),
-            var(--primary-red)
-          );
+          background: linear-gradient(135deg, var(--primary-yellow), var(--primary-red));
           transition: left 0.3s ease;
           z-index: 1;
         }
@@ -570,25 +502,18 @@ const SignIn = () => {
         }
 
         .submit-btn.loading::after {
-          content: "";
+          content: '';
           position: absolute;
           top: 0;
           left: -100%;
           width: 100%;
           height: 100%;
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255, 255, 255, 0.1),
-            transparent
-          );
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
           animation: loading-shimmer 1.5s infinite;
         }
 
         @keyframes loading-shimmer {
-          100% {
-            left: 100%;
-          }
+          100% { left: 100%; }
         }
 
         .social-section {
@@ -605,25 +530,16 @@ const SignIn = () => {
 
         .divider::before,
         .divider::after {
-          content: "";
+          content: '';
           position: absolute;
           top: 50%;
           width: 45%;
           height: 1px;
-          background: linear-gradient(
-            to right,
-            transparent,
-            rgba(255, 255, 255, 0.2),
-            transparent
-          );
+          background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
         }
 
-        .divider::before {
-          left: 0;
-        }
-        .divider::after {
-          right: 0;
-        }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
 
         .social-buttons {
           display: flex;
@@ -650,17 +566,13 @@ const SignIn = () => {
         }
 
         .social-btn::before {
-          content: "";
+          content: '';
           position: absolute;
           top: 0;
           left: 0;
           width: 100%;
           height: 100%;
-          background: radial-gradient(
-            circle at center,
-            rgba(255, 255, 255, 0.1),
-            transparent
-          );
+          background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1), transparent);
           opacity: 0;
           transition: opacity 0.3s ease;
         }
@@ -690,17 +602,13 @@ const SignIn = () => {
         }
 
         .auth-link a::after {
-          content: "";
+          content: '';
           position: absolute;
           bottom: -2px;
           left: 0;
           width: 0;
           height: 2px;
-          background: linear-gradient(
-            135deg,
-            var(--primary-red),
-            var(--primary-yellow)
-          );
+          background: linear-gradient(135deg, var(--primary-red), var(--primary-yellow));
           transition: width 0.3s ease;
         }
 
@@ -712,11 +620,7 @@ const SignIn = () => {
           flex: 1;
           max-width: 500px;
           padding: 2rem;
-          background: linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.02),
-            rgba(255, 255, 255, 0.01)
-          );
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
           backdrop-filter: blur(10px);
           border: 1px solid rgba(255, 255, 255, 0.05);
           border-radius: 24px;
@@ -726,12 +630,11 @@ const SignIn = () => {
         }
 
         .showcase-section:hover {
-          transform: perspective(1000px) rotateX(0deg) rotateY(0deg)
-            translateY(-10px);
+          transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(-10px);
         }
 
         .showcase-title {
-          font-family: "Clash Display", sans-serif;
+          font-family: 'Clash Display', sans-serif;
           font-size: 2rem;
           color: var(--text-primary);
           margin-bottom: 1rem;
@@ -765,17 +668,13 @@ const SignIn = () => {
         }
 
         .example-card::before {
-          content: "";
+          content: '';
           position: absolute;
           top: 0;
           left: 0;
           width: 100%;
           height: 100%;
-          background: radial-gradient(
-            circle at 50% 50%,
-            rgba(255, 71, 87, 0.05),
-            transparent
-          );
+          background: radial-gradient(circle at 50% 50%, rgba(255, 71, 87, 0.05), transparent);
           opacity: 0;
           transition: opacity 0.3s ease;
         }
@@ -809,27 +708,25 @@ const SignIn = () => {
             flex-direction: column;
             gap: 2rem;
           }
-
+          
           .auth-card,
           .showcase-section {
             transform: none;
             max-width: 100%;
           }
-
+          
           .auth-card:hover,
           .showcase-section:hover {
             transform: translateY(-5px);
           }
-
+          
           .main-container {
             padding: 1rem;
           }
         }
 
         @media (prefers-reduced-motion: reduce) {
-          *,
-          *::before,
-          *::after {
+          *, *::before, *::after {
             animation-duration: 0.01ms !important;
             animation-iteration-count: 1 !important;
             transition-duration: 0.01ms !important;
@@ -838,18 +735,15 @@ const SignIn = () => {
       `}</style>
 
       {/* Custom Cursor */}
-      <div
+      <div 
         ref={cursorRef}
-        className="cursor"
-        style={{left: mousePosition.x + "px", top: mousePosition.y + "px"}}
+        className="cursor" 
+        style={{ left: mousePosition.x + 'px', top: mousePosition.y + 'px' }}
       />
-      <div
+      <div 
         ref={followerRef}
-        className="cursor-follower"
-        style={{
-          left: followerPosition.x + "px",
-          top: followerPosition.y + "px",
-        }}
+        className="cursor-follower" 
+        style={{ left: followerPosition.x + 'px', top: followerPosition.y + 'px' }}
       />
 
       {/* Background */}
@@ -872,40 +766,34 @@ const SignIn = () => {
             <div className="brand-section">
               <div className="logo">TheEnd.page</div>
               <h1 className="page-title">Welcome Back</h1>
-              <p className="tagline">
-                If you're going to leave, at least log in first.
-              </p>
+              <p className="tagline">If you're going to leave, at least log in first.</p>
             </div>
 
             <div className="form-container">
               <div onSubmit={handleSubmit}>
                 <div className="form-group">
-                  <label className="form-label" htmlFor="loginEmail">
-                    Email Address
-                  </label>
+                  <label className="form-label" htmlFor="loginEmail">Email Address</label>
                   <div className="input-wrapper">
-                    <input
-                      type="email"
-                      id="loginEmail"
-                      className="form-input"
-                      placeholder="your.final@goodbye.com"
+                    <input 
+                      type="email" 
+                      id="loginEmail" 
+                      className="form-input" 
+                      placeholder="your.final@goodbye.com" 
                       required
                       onFocus={handleFocus}
                       onBlur={handleBlur}
                     />
                   </div>
                 </div>
-
+                
                 <div className="form-group">
-                  <label className="form-label" htmlFor="loginPassword">
-                    Password
-                  </label>
+                  <label className="form-label" htmlFor="loginPassword">Password</label>
                   <div className="input-wrapper">
-                    <input
-                      type="password"
-                      id="loginPassword"
-                      className="form-input"
-                      placeholder="••••••••••••"
+                    <input 
+                      type="password" 
+                      id="loginPassword" 
+                      className="form-input" 
+                      placeholder="••••••••••••" 
                       required
                       onFocus={handleFocus}
                       onBlur={handleBlur}
@@ -916,21 +804,21 @@ const SignIn = () => {
                 <div className="forgot-link">
                   <a href="#">Forgot your password?</a>
                 </div>
-
-                <button
+                
+                <button 
                   onClick={handleSubmit}
-                  className={`submit-btn ${isLoading ? "loading" : ""}`}
+                  className={`submit-btn ${isLoading ? 'loading' : ''}`}
                   disabled={isLoading}
                 >
-                  <span>{isLoading ? "Signing you in..." : "Sign Me In"}</span>
+                  <span>{isLoading ? 'Signing you in...' : 'Sign Me In'}</span>
                 </button>
               </div>
 
               <div className="social-section">
                 <div className="divider">or continue with</div>
-
+                
                 <div className="social-buttons">
-                  <button
+                  <button 
                     className="social-btn"
                     onMouseEnter={() => handleInteractiveHover(1.5)}
                     onMouseLeave={() => handleInteractiveHover(1)}
@@ -938,7 +826,7 @@ const SignIn = () => {
                     <span>🔥</span>
                     <span>Google</span>
                   </button>
-                  <button
+                  <button 
                     className="social-btn"
                     onMouseEnter={() => handleInteractiveHover(1.5)}
                     onMouseLeave={() => handleInteractiveHover(1)}
@@ -958,60 +846,43 @@ const SignIn = () => {
           {/* Showcase Section */}
           <div className="showcase-section">
             <h2 className="showcase-title">Goodbye Pages Done Right</h2>
-            <p className="showcase-subtitle">
-              See how others have made their dramatic exits with style and
-              substance.
-            </p>
-
+            <p className="showcase-subtitle">See how others have made their dramatic exits with style and substance.</p>
+            
             <div className="examples-grid">
-              <div
+              <div 
                 className="example-card"
                 onMouseEnter={() => handleInteractiveHover(1.5)}
                 onMouseLeave={() => handleInteractiveHover(1)}
               >
-                <div className="example-title">
-                  💔 The Heartbreak Chronicles
-                </div>
-                <div className="example-desc">
-                  Sarah's viral farewell to social media turned personal pain
-                  into universal poetry, reaching 2M+ readers.
-                </div>
+                <div className="example-title">💔 The Heartbreak Chronicles</div>
+                <div className="example-desc">Sarah's viral farewell to social media turned personal pain into universal poetry, reaching 2M+ readers.</div>
               </div>
-
-              <div
+              
+              <div 
                 className="example-card"
                 onMouseEnter={() => handleInteractiveHover(1.5)}
                 onMouseLeave={() => handleInteractiveHover(1)}
               >
                 <div className="example-title">🔥 Corporate Exodus</div>
-                <div className="example-desc">
-                  Marcus documented his burnout journey with receipts, sass, and
-                  actionable advice for fellow escapees.
-                </div>
+                <div className="example-desc">Marcus documented his burnout journey with receipts, sass, and actionable advice for fellow escapees.</div>
               </div>
-
-              <div
+              
+              <div 
                 className="example-card"
                 onMouseEnter={() => handleInteractiveHover(1.5)}
                 onMouseLeave={() => handleInteractiveHover(1)}
               >
                 <div className="example-title">🫠 Quarter-Life Manifesto</div>
-                <div className="example-desc">
-                  Alex's existential crisis became a movement, inspiring
-                  thousands to question their life choices.
-                </div>
+                <div className="example-desc">Alex's existential crisis became a movement, inspiring thousands to question their life choices.</div>
               </div>
-
-              <div
+              
+              <div 
                 className="example-card"
                 onMouseEnter={() => handleInteractiveHover(1.5)}
                 onMouseLeave={() => handleInteractiveHover(1)}
               >
                 <div className="example-title">🎤 Industry Mic Drop</div>
-                <div className="example-desc">
-                  The resignation letter that exposed toxic culture and changed
-                  an entire industry's conversation.
-                </div>
+                <div className="example-desc">The resignation letter that exposed toxic culture and changed an entire industry's conversation.</div>
               </div>
             </div>
           </div>
