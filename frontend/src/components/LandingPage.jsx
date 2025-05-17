@@ -76,9 +76,11 @@ const LandingPage = () => {
 
   // If dashboard is open, show it
   if (showDashboard) {
+    const token = localStorage.getItem("token");
     return (
       <Dashboard 
         user={user} 
+        token={token}
         onSignOut={handleSignOut}
         onClose={() => setShowDashboard(false)}
       />

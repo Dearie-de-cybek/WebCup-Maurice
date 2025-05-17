@@ -39,9 +39,18 @@ export const signUpUser = async (userData) => {
 };
 
 // Get Profile
-export const getUserProfile = async () => {
-  const res = await api.get("/auth/profile");
-  return res.data;
+export const getUserPages = async (token) => {
+    try {
+    const response = await api.get("/pages/all", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data.pages
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+  
 };
 
 // Logout
