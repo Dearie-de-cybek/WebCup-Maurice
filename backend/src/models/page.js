@@ -27,9 +27,33 @@ const pageSchema = new Schema({
         type: String,
         required: true,
     },
-    media: {
+    sub_message: {
         type: String,
         required: false,
+    },
+    pictures: {
+        type: String,
+        required: false,
+    },
+    music: {
+        type: String,
+        required: false,
+    },
+    video: {
+        type: String,
+        required: false,
+    },
+    background_color: {
+        type: String,
+        required: false,
+    },
+    text_color: {
+        type: String,
+        required: false,
+    },
+    click_count: {
+        type: String,
+        default: 0,
     },
 }, {
     timestamps: true,
