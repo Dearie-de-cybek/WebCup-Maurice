@@ -23,7 +23,7 @@ const MessageEditor = ({ pageData, setPageData, onNext, onPrev }) => {
               value={pageData.title}
               onChange={(e) => handleChange('title', e.target.value)}
               placeholder="My Epic Exit"
-              className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-lg"
+              className="w-full p-4 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-purple-500 focus:border-transparent text-lg"
             />
           </div>
           
@@ -36,7 +36,7 @@ const MessageEditor = ({ pageData, setPageData, onNext, onPrev }) => {
               onChange={(e) => handleChange('mainMessage', e.target.value)}
               placeholder="Write your goodbye message here..."
               rows={8}
-              className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+              className="w-full p-4 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
             />
           </div>
           
@@ -49,7 +49,7 @@ const MessageEditor = ({ pageData, setPageData, onNext, onPrev }) => {
               value={pageData.subMessage}
               onChange={(e) => handleChange('subMessage', e.target.value)}
               placeholder="A final thought..."
-              className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full p-4 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
           </div>
         </div>
