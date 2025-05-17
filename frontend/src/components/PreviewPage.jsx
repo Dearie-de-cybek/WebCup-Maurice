@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Copy, Share2, Download, Twitter, Facebook, LinkIcon } from 'lucide-react';
 import LivePreview from './shared/LivePreview';
+import { storePage } from '../services/pages';
 
 const PreviewPage = ({ pageData, onPrev }) => {
   const [isPublishing, setIsPublishing] = useState(false);
@@ -92,20 +93,26 @@ const PreviewPage = ({ pageData, onPrev }) => {
     setIsPublishing(true);
     
     try {
+      setIsPublishing(true);
+
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       const slug = generateSlug();
-      await savePageData(slug, pageData);
-      
+      const response = await storePage({ slug, data: pageData });
+
+      if (response.success) {
       setPageSlug(slug);
       setIsPublished(true);
+      } else {
+      throw new Error(response.message || 'Failed to publish page.');
+      }
     } catch (error) {
       console.error('Error publishing page:', error);
-      
+
       // Show user-friendly error message
       const errorMessage = error.message || 'Failed to publish page. Please try again.';
-      alert(`Publication failed: ${errorMessage}\n\nTip: Try using smaller image files (< 1MB) or remove background music.`);
+      alert(`Publication failed: ${errorMessage}\n\nTip: Ensure your internet connection is stable.`);
     } finally {
       setIsPublishing(false);
     }
