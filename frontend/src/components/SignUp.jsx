@@ -114,11 +114,9 @@ const SignUp = ({ onClose, onSignIn, onSwitchToSignIn }) => {
 
     // Create user account
     const userData = {
-      id: Math.random().toString(36).substring(7),
       name: formData.name,
       email: formData.email,
-      joinedAt: new Date().toISOString(),
-      lastLogin: new Date().toISOString()
+      password: formData.password
     };
 
     localStorage.setItem('theend_user', JSON.stringify(userData));
