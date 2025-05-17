@@ -5,19 +5,32 @@ const api = axios.create({
 });
 
 // Login
-export const loginUser = async (email, password) => {
-  const res = await api.post("/auth/login", { email, password });
-  return res.data;
+export const signInUser = async (userData) => {
+  const {email , password} = userData;
+  try {
+    const response = await api.post("/auth/login", { email, password });
+    const user = response.data.user; 
+    return user
+  } catch (error) {
+    const errorMessage = error.response?.data?.error || error.message || "Login failed";
+    alert(`Login failed: ${errorMessage}`);
+    console.error("Login failed:", errorMessage);
+    return null;
+  }
 };
 
 // Signup
-export const signupUser = async (userData) => {
+export const signUpUser = async (userData) => {
+  console.log(userData)
   const {name, email , password} = userData;
-  await api.post("/auth/register",
-    {name,
-    email,
-    password
-  });
+   try {
+    await api.post("/auth/register", {name, email, password });
+  } catch (error) {
+    // const errorMessage = error.response?.data?.error || error.message || "Login failed";
+    // alert(`Login failed: ${errorMessage}`);
+    // console.error("Login failed:", errorMessage);
+    return null;
+  }
 };
 
 // Get Profile
