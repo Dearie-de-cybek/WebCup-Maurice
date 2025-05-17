@@ -31,9 +31,6 @@ export const signUpUser = async (userData) => {
    try {
     await api.post("/auth/register", {name, email, password });
   } catch (error) {
-    // const errorMessage = error.response?.data?.error || error.message || "Login failed";
-    // alert(`Login failed: ${errorMessage}`);
-    // console.error("Login failed:", errorMessage);
     return null;
   }
 };
