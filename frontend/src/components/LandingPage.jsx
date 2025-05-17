@@ -39,6 +39,7 @@ const LandingPage = () => {
   const handleSignIn = async(userData,r) => {
     let user = await signInUser(userData);
     setUser(user)
+    console.log(user);
     setShowSignIn(false);
   };
 
