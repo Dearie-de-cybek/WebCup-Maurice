@@ -1,6 +1,6 @@
 const Page = require("../models/page");
 const { v4: uuidv4 } = require("uuid");
-const slugify = require("../utils/slugGenerator");
+const slugify = require("../utils/slug");
 
 class PageController {
   async createPage(req, res) {

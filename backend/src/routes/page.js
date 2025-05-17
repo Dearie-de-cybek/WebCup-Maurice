@@ -1,6 +1,6 @@
 const express = require("express");
 const PageController = require("../controller/PageController");
-const { isAuthenticated } = require("../middlewares/auth");
+const isAuthenticated  = require("../middlewares/auth");
 const useCatchErrors = require("../error/catchErrors");
 
 class PageRoute {
@@ -16,35 +16,35 @@ class PageRoute {
   initializeRoutes() {
     // Create a new page (authenticated)
     this.router.post(
-      `${this.path}`,
+      `${this.path}/store`,
       isAuthenticated,
       useCatchErrors(this.pageController.createPage)
     );
 
     // Get all pages for authenticated user
     this.router.get(
-      `${this.path}`,
+      `${this.path}/all`,
       isAuthenticated,
       useCatchErrors(this.pageController.getUserPages)
     );
 
     // Get specific page by ID (authenticated, user must own page)
     this.router.get(
-      `${this.path}/:id`,
+      `${this.path}/show/:id`,
       isAuthenticated,
       useCatchErrors(this.pageController.getPageById)
     );
 
     // Update a page (authenticated, user must own page)
     this.router.patch(
-      `${this.path}/:id`,
+      `${this.path}/update/:id`,
       isAuthenticated,
       useCatchErrors(this.pageController.updatePage)
     );
 
     // Delete a page (authenticated, user must own page)
     this.router.delete(
-      `${this.path}/:id`,
+      `${this.path}/delete/:id`,
       isAuthenticated,
       useCatchErrors(this.pageController.deletePage)
     );
