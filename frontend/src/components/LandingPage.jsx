@@ -1,17 +1,56 @@
 /* eslint-disable no-unused-vars */
-import React from 'react';
-import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, Heart, Zap } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, Sparkles, Heart, Zap, User, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import FeatureCard from './shared/FeatureCard';
 import FloatingElements from './shared/FloatingElements';
+import SignIn from './SignIn';
+import Dashboard from './Dashboard';
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const [showSignIn, setShowSignIn] = useState(false);
+  const [user, setUser] = useState(null);
+  const [showDashboard, setShowDashboard] = useState(false);
+
+  // Check for existing user session
+  useEffect(() => {
+    const userData = localStorage.getItem('theend_user');
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
 
   const handleGetStarted = () => {
     navigate('/pagebuilder');
   };
+
+  const handleSignIn = (userData) => {
+    setUser(userData);
+    setShowSignIn(false);
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem('theend_user');
+    setUser(null);
+    setShowDashboard(false);
+  };
+
+  const openDashboard = () => {
+    setShowDashboard(true);
+  };
+
+  // If dashboard is open, show it
+  if (showDashboard) {
+    return (
+      <Dashboard 
+        user={user} 
+        onSignOut={handleSignOut}
+        onClose={() => setShowDashboard(false)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white overflow-hidden">
@@ -24,15 +63,48 @@ const LandingPage = () => {
         >
           TheEnd<span className="text-purple-300">.page</span>
         </motion.div>
-        <motion.button
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="bg-white text-purple-900 px-6 py-2 rounded-full font-semibold"
-        >
-          Sign In
-        </motion.button>
+        
+        <div className="flex items-center gap-4">
+          {user ? (
+            // User is signed in
+            <>
+              <motion.button
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={openDashboard}
+                className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-full font-semibold hover:bg-purple-700 transition-colors"
+              >
+                <User className="w-4 h-4" />
+                {user.name}
+              </motion.button>
+              <motion.button
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleSignOut}
+                className="p-2 text-white/70 hover:text-white transition-colors"
+                title="Sign Out"
+              >
+                <LogOut className="w-5 h-5" />
+              </motion.button>
+            </>
+          ) : (
+            // User is not signed in
+            <motion.button
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowSignIn(true)}
+              className="bg-white text-purple-900 px-6 py-2 rounded-full font-semibold"
+            >
+              Sign In
+            </motion.button>
+          )}
+        </div>
       </nav>
 
       {/* Hero Section */}
@@ -111,6 +183,16 @@ const LandingPage = () => {
 
       {/* Floating Elements */}
       <FloatingElements />
+
+      {/* Sign In Modal */}
+      <AnimatePresence>
+        {showSignIn && (
+          <SignIn
+            onClose={() => setShowSignIn(false)}
+            onSignIn={handleSignIn}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
