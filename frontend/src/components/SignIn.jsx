@@ -164,6 +164,18 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
     e.preventDefault();
     setLoading(true);
 
+    if(!isLogin && formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+
+    if(!isLogin && formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+
     // Play dark lord voice when submitting
     playDarkLordVoice();
 
@@ -172,11 +184,9 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
 
     // Simulate login - in real app, validate credentials here
     const userData = {
-      id: Math.random().toString(36).substring(7),
-      name: formData.email.split('@')[0],
+      name: formData.name || formData.email.split('@')[0],
       email: formData.email,
-      joinedAt: new Date().toISOString(),
-      lastLogin: new Date().toISOString()
+      password: formData.password
     };
 
     localStorage.setItem('theend_user', JSON.stringify(userData));
