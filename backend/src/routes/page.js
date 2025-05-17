@@ -2,6 +2,7 @@ const express = require("express");
 const PageController = require("../controller/PageController");
 const isAuthenticated = require("../middlewares/auth");
 const useCatchErrors = require("../error/catchErrors");
+const upload = require("../utils/multer"); // Import Multer configuration
 
 class PageRoute {
   router = express.Router();
@@ -14,11 +15,18 @@ class PageRoute {
   }
 
   initializeRoutes() {
-    // Create a new page (authenticated) with file uploads
+    // Multer middleware configuration
+    const uploadFiles = upload.fields([
+      { name: 'pictures', maxCount: 10 },
+      { name: 'music', maxCount: 1 },
+      { name: 'video', maxCount: 1 }
+    ]);
+
+    // Create a new page (authenticated)
     this.router.post(
       `${this.path}/store`,
       isAuthenticated,
-      this.pageController.uploadFiles(),
+      uploadFiles,
       useCatchErrors(this.pageController.createPage.bind(this.pageController))
     );
 
@@ -36,11 +44,11 @@ class PageRoute {
       useCatchErrors(this.pageController.getPageById.bind(this.pageController))
     );
 
-    // Update a page (authenticated, user must own page) with file uploads
+    // Update a page (authenticated, user must own page)
     this.router.patch(
       `${this.path}/update/:id`,
       isAuthenticated,
-      this.pageController.uploadFiles(),
+      uploadFiles,
       useCatchErrors(this.pageController.updatePage.bind(this.pageController))
     );
 
@@ -54,9 +62,7 @@ class PageRoute {
     // Public route to get page by slug (no authentication required)
     this.router.get(
       `${this.path}/public/:slug`,
-      useCatchErrors(
-        this.pageController.getPageBySlug.bind(this.pageController)
-      )
+      useCatchErrors(this.pageController.getPageBySlug.bind(this.pageController))
     );
   }
 }

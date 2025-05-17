@@ -1,7 +1,7 @@
 const Page = require("../models/page");
 const { v4: uuidv4 } = require("uuid");
 const slugify = require("../utils/slug");
-const upload = require("../utils/multerConfig");
+const upload = require("../utils/multer");
 const fs = require("fs");
 const path = require("path");
 
