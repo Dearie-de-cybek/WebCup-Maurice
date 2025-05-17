@@ -1,58 +1,74 @@
 /* eslint-disable no-unused-vars */
-import React, { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
 
 const LivePreview = ({ pageData }) => {
   const audioRef = useRef(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isSlideShowPlaying, setIsSlideShowPlaying] = useState(false);
+
+  // Auto-advance slideshow
+  useEffect(() => {
+    if (pageData.images && pageData.images.length > 1 && (isSlideShowPlaying || pageData.slideshowAutoplay)) {
+      const interval = setInterval(() => {
+        setCurrentImageIndex((prevIndex) => 
+          prevIndex === pageData.images.length - 1 ? 0 : prevIndex + 1
+        );
+      }, 3000); // Change every 3 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [pageData.images, isSlideShowPlaying, pageData.slideshowAutoplay]);
 
   const getToneStyles = (tone) => {
     const toneStyles = {
       dramatic: {
-        background: 'linear-gradient(135deg, #1f1f1f 0%, #8b0000 100%)',
-        textColor: '#ffffff',
-        fontFamily: "'Playfair Display', serif",
+        background: pageData.backgroundColor || 'linear-gradient(135deg, #1f1f1f 0%, #8b0000 100%)',
+        textColor: pageData.textColor || '#ffffff',
+        fontFamily: pageData.fontFamily || "'Playfair Display', serif",
         accent: '#ff4444'
       },
       ironic: {
-        background: 'linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%)',
-        textColor: '#2c3e50',
-        fontFamily: "'Comic Sans MS', cursive",
+        background: pageData.backgroundColor || 'linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%)',
+        textColor: pageData.textColor || '#2c3e50',
+        fontFamily: pageData.fontFamily || "'Comic Sans MS', cursive",
         accent: '#f39c12'
       },
       cringe: {
-        background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)',
-        textColor: '#ffffff',
-        fontFamily: "'Papyrus', fantasy",
+        background: pageData.backgroundColor || 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)',
+        textColor: pageData.textColor || '#ffffff',
+        fontFamily: pageData.fontFamily || "'Papyrus', fantasy",
         accent: '#e74c3c'
       },
       classy: {
-        background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
-        textColor: '#ecf0f1',
-        fontFamily: "'Georgia', serif",
+        background: pageData.backgroundColor || 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
+        textColor: pageData.textColor || '#ecf0f1',
+        fontFamily: pageData.fontFamily || "'Georgia', serif",
         accent: '#3498db'
       },
       touching: {
-        background: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
-        textColor: '#8b4513',
-        fontFamily: "'Dancing Script', cursive",
+        background: pageData.backgroundColor || 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+        textColor: pageData.textColor || '#8b4513',
+        fontFamily: pageData.fontFamily || "'Dancing Script', cursive",
         accent: '#e74c3c'
       },
       absurd: {
-        background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-        textColor: '#2c3e50',
-        fontFamily: "'Courier New', monospace",
+        background: pageData.backgroundColor || 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+        textColor: pageData.textColor || '#2c3e50',
+        fontFamily: pageData.fontFamily || "'Courier New', monospace",
         accent: '#9b59b6'
       },
       'passive-aggressive': {
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        textColor: '#ffffff',
-        fontFamily: "'Arial', sans-serif",
+        background: pageData.backgroundColor || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        textColor: pageData.textColor || '#ffffff',
+        fontFamily: pageData.fontFamily || "'Arial', sans-serif",
         accent: '#f39c12'
       },
       honest: {
-        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-        textColor: '#2c3e50',
-        fontFamily: "'Helvetica', sans-serif",
+        background: pageData.backgroundColor || 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        textColor: pageData.textColor || '#2c3e50',
+        fontFamily: pageData.fontFamily || "'Helvetica', sans-serif",
         accent: '#27ae60'
       }
     };
@@ -90,6 +106,19 @@ const LivePreview = ({ pageData }) => {
   const styles = getToneStyles(pageData.tone);
   const animation = getAnimationVariants(pageData.animationStyle);
   const finalTextColor = pageData.textColor || styles.textColor;
+  const finalFontFamily = pageData.fontFamily || styles.fontFamily;
+
+  // Handle text size
+  const getTextSizeClass = (size) => {
+    const sizeMap = {
+      'text-sm': 'text-sm',
+      'text-base': 'text-base',
+      'text-lg': 'text-lg',
+      'text-xl': 'text-xl',
+      'text-2xl': 'text-2xl'
+    };
+    return sizeMap[size] || 'text-base';
+  };
 
   useEffect(() => {
     if (pageData.music && audioRef.current) {
@@ -100,14 +129,28 @@ const LivePreview = ({ pageData }) => {
   }, [pageData.music]);
 
   const previewStyle = {
-    background: pageData.backgroundImage 
-      ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${pageData.backgroundImage.url})`
-      : styles.background,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
+    background: pageData.backgroundColor || styles.background,
     color: finalTextColor,
-    fontFamily: styles.fontFamily,
+    fontFamily: finalFontFamily,
     minHeight: '400px'
+  };
+
+  const textSizeClass = getTextSizeClass(pageData.textSize);
+
+  const nextImage = () => {
+    if (pageData.images && pageData.images.length > 1) {
+      setCurrentImageIndex((prevIndex) => 
+        prevIndex === pageData.images.length - 1 ? 0 : prevIndex + 1
+      );
+    }
+  };
+
+  const prevImage = () => {
+    if (pageData.images && pageData.images.length > 1) {
+      setCurrentImageIndex((prevIndex) => 
+        prevIndex === 0 ? pageData.images.length - 1 : prevIndex - 1
+      );
+    }
   };
 
   return (
@@ -120,8 +163,63 @@ const LivePreview = ({ pageData }) => {
           className="p-8 relative"
           initial={animation.initial}
           animate={animation.animate}
-          key={`${pageData.tone}-${pageData.animationStyle}`}
+          key={`${pageData.tone}-${pageData.animationStyle}-${pageData.backgroundColor}`}
         >
+          {/* Background image slideshow */}
+          {pageData.images && pageData.images.length > 0 && (
+            <div className="absolute inset-0">
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={currentImageIndex}
+                  src={pageData.images[currentImageIndex].url}
+                  alt="Background"
+                  className="w-full h-full object-cover"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.3 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                />
+              </AnimatePresence>
+              
+              {/* Slideshow controls */}
+              {pageData.images.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-2">
+                  <button
+                    onClick={prevImage}
+                    className="p-2 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70 transition-all"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  
+                  <div className="flex gap-2">
+                    {pageData.images.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  
+                  <button
+                    onClick={() => setIsSlideShowPlaying(!isSlideShowPlaying)}
+                    className="p-2 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70 transition-all"
+                  >
+                    {isSlideShowPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                  </button>
+                  
+                  <button
+                    onClick={nextImage}
+                    className="p-2 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70 transition-all"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Background overlay based on tone */}
           <div className="absolute inset-0 opacity-10">
             {pageData.tone === 'dramatic' && (
@@ -154,8 +252,15 @@ const LivePreview = ({ pageData }) => {
           {/* Content */}
           <div className="relative z-10 text-center">
             <motion.h1 
-              className="text-3xl md:text-4xl font-bold mb-6"
-              style={{ color: finalTextColor }}
+              className={`font-bold mb-6 ${
+                pageData.textSize === 'text-sm' ? 'text-xl md:text-2xl' :
+                pageData.textSize === 'text-base' ? 'text-2xl md:text-3xl' :
+                pageData.textSize === 'text-lg' ? 'text-3xl md:text-4xl' :
+                pageData.textSize === 'text-xl' ? 'text-4xl md:text-5xl' :
+                pageData.textSize === 'text-2xl' ? 'text-5xl md:text-6xl' :
+                'text-3xl md:text-4xl'
+              }`}
+              style={{ color: finalTextColor, fontFamily: finalFontFamily }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
@@ -164,7 +269,8 @@ const LivePreview = ({ pageData }) => {
             </motion.h1>
             
             <motion.div 
-              className="text-lg mb-4 leading-relaxed max-w-lg mx-auto"
+              className={`mb-4 leading-relaxed max-w-lg mx-auto ${textSizeClass}`}
+              style={{ color: finalTextColor, fontFamily: finalFontFamily }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
@@ -182,7 +288,8 @@ const LivePreview = ({ pageData }) => {
             
             {pageData.subMessage && (
               <motion.p 
-                className="text-sm opacity-80 italic"
+                className={`opacity-80 italic ${pageData.textSize === 'text-sm' ? 'text-xs' : 'text-sm'}`}
+                style={{ color: finalTextColor, fontFamily: finalFontFamily }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.9 }}
@@ -256,7 +363,7 @@ const LivePreview = ({ pageData }) => {
                 transition={{ delay: 1 }}
               >
                 🎵
-                <span className="text-xs">
+                <span className="text-xs text-white">
                   {pageData.music.name || 'Background music'}
                 </span>
               </motion.div>
@@ -278,13 +385,22 @@ const LivePreview = ({ pageData }) => {
       )}
 
       {/* Preview info */}
-      <div className="mt-4 text-sm text-gray-600">
+      <div className="mt-4 text-sm text-gray-600 space-y-1">
         <p>
           <strong>Tone:</strong> {pageData.tone ? pageData.tone.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'None selected'}
         </p>
-        {pageData.backgroundImage && (
+        <p>
+          <strong>Background:</strong> {pageData.backgroundColor ? 'Custom color' : 'Default gradient'}
+        </p>
+        <p>
+          <strong>Font:</strong> {pageData.fontFamily ? pageData.fontFamily.split(',')[0].replace(/['"]/g, '') : 'Default'}
+        </p>
+        <p>
+          <strong>Text Size:</strong> {pageData.textSize ? pageData.textSize.replace('text-', '').toUpperCase() : 'Medium'}
+        </p>
+        {pageData.images && pageData.images.length > 0 && (
           <p>
-            <strong>Background:</strong> Custom image uploaded
+            <strong>Images:</strong> {pageData.images.length} image{pageData.images.length > 1 ? 's' : ''} (slideshow)
           </p>
         )}
         {pageData.music && (
