@@ -16,31 +16,13 @@ class AuthRoute {
   initializeRoutes() {
     // Public authentication routes
     this.router.post(
-      `${this.path}/user/signup`,
-      useCatchErrors(this.authController.userRegister)
+      `${this.path}/register`,
+      useCatchErrors(this.authController.register)
     );
-    
-    this.router.post(
-      `${this.path}/organizer/signup`,
-      useCatchErrors(this.authController.organizerRegister)
-    );
-    
+
     this.router.post(
       `${this.path}/login`,
       useCatchErrors(this.authController.login)
-    );
-
-    // Protected authentication routes
-    this.router.post(
-      `${this.path}/logout`,
-      isAuthenticated,
-      useCatchErrors(this.authController.logout)
-    );
-    
-    this.router.get(
-      `${this.path}/profile`,
-      isAuthenticated,
-      useCatchErrors(this.authController.getUserProfile)
     );
   }
 }
