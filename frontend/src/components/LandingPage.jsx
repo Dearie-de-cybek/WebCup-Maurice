@@ -46,10 +46,11 @@ const LandingPage = () => {
     setUser(res.user);
     localStorage.setItem('Active User', JSON.stringify(res));
     setShowSignIn(false);
+    setShowDashboard(true);
   };
 
   const handleSignOut = () => {
-    localStorage.removeItem('Active User');
+    localStorage.clear();
     setUser(null);
     setShowDashboard(false);
   };
