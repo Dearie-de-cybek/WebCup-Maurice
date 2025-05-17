@@ -9,6 +9,7 @@ import SignIn from './SignIn';
 import SignUp from './SignUp';
 import Dashboard from './Dashboard';
 import { signUpUser, signInUser } from '../client';
+import Dashboard from '../pages/Dashboard';
 
 const LandingPage = () => {
   const navigate = useNavigate();
