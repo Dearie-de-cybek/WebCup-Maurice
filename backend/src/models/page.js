@@ -24,7 +24,7 @@ const pageSchema = new Schema(
     user_uuid: {
       type: String,
       required: true,
-      unique: true,
+      unique: false,
     },
     slug: {
       type: String,

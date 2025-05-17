@@ -28,13 +28,16 @@ class PageController {
         textSize,
         music,
       } = req.body;
-
+  
       // Get user_uuid from authenticated user
       const user_uuid = req.user.uuid;
-
-      // Generate slug from title
-      const slug = slugify(title);
-
+  
+      // Generate a unique slug from title by adding a timestamp
+      // This ensures uniqueness even if the same user creates pages with identical titles
+      const baseSlug = slugify(title);
+      const timestamp = new Date().getTime().toString().slice(-6); // Use last 6 digits of timestamp
+      const slug = `${baseSlug}-${timestamp}`;
+  
       // Handle file paths for images (completely optional)
       const images = req.files["images"]
         ? req.files["images"].map((file) => ({
@@ -42,12 +45,12 @@ class PageController {
             caption: "", // Default empty caption
           }))
         : []; // Empty array if no images
-
+  
       // Handle background image (optional)
       const backgroundImage = req.files["backgroundImage"]
         ? req.files["backgroundImage"][0].path
         : null;
-
+  
       const newPage = new Page({
         title,
         user_uuid,
@@ -65,9 +68,9 @@ class PageController {
         textSize,
         click_count: 0,
       });
-
+  
       const savedPage = await newPage.save();
-
+  
       // Return response without internal fields
       const pageResponse = {
         id: savedPage._id,
@@ -87,12 +90,14 @@ class PageController {
         click_count: savedPage.click_count,
         createdAt: savedPage.createdAt,
       };
-
+  
       res.status(201).json({
         message: "Page created successfully",
         page: pageResponse,
       });
     } catch (error) {
+      console.error("Page creation error:", error);
+      
       // Clean up uploaded files if error occurs
       if (req.files) {
         Object.values(req.files).forEach((fileArray) => {
@@ -103,13 +108,20 @@ class PageController {
           });
         });
       }
-
+  
+      // Provide more detailed error message for debugging
       if (error.code === 11000) {
+        // This should no longer happen with our timestamp approach, but kept for safety
         return res.status(400).json({
-          error: "Page with this title or for this user already exists",
+          error: "Page creation failed due to a duplicate key error. Please try again.",
+          details: error.message
         });
       }
-      res.status(500).json({ error: error.message });
+      
+      res.status(500).json({ 
+        error: "Failed to create page", 
+        details: error.message 
+      });
     }
   }
 

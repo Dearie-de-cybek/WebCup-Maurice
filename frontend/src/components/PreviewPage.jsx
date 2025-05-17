@@ -93,11 +93,82 @@ const PreviewPage = ({ pageData, onPrev }) => {
     setIsPublishing(true);
     
     try {
-      // console.log(pageData);
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Get the authentication token from local storage
+      const token = localStorage.getItem('token');
       
-      const slug = generateSlug();
+      if (!token) {
+        throw new Error('Authentication token not found. Please log in again.');
+      }
+      
+      // Create a FormData object to handle file uploads
+      const formData = new FormData();
+      
+      // Add all text fields from pageData
+      formData.append('title', pageData.title);
+      formData.append('tone', pageData.tone);
+      formData.append('mainMessage', pageData.mainMessage);
+      formData.append('subMessage', pageData.subMessage);
+      formData.append('animationStyle', pageData.animationStyle);
+      formData.append('backgroundColor', pageData.backgroundColor);
+      formData.append('fontFamily', pageData.fontFamily);
+      formData.append('textColor', pageData.textColor);
+      formData.append('textSize', pageData.textSize);
+      
+      // Add music data if exists (as a JSON string)
+      if (pageData.music) {
+        formData.append('music', JSON.stringify(pageData.music));
+      }
+      
+      // Add images if they exist
+      if (pageData.images && pageData.images.length > 0) {
+        pageData.images.forEach((image, index) => {
+          // If image is a File object, append it directly
+          if (image instanceof File) {
+            formData.append('images', image);
+          } 
+          // If image is a URL/path or object with URL, you might need to fetch it first
+          // This depends on how your page editor handles images
+        });
+      }
+      
+      // Add background image if exists
+      if (pageData.backgroundImage) {
+        if (pageData.backgroundImage instanceof File) {
+          formData.append('backgroundImage', pageData.backgroundImage);
+        }
+      }
+      
+      // Make the API call to store the page data
+      const response = await fetch('http://localhost:8080/api/pages/store', {
+        method: 'POST',
+        headers: {
+          // Don't set Content-Type header, it will be automatically set with boundary by browser
+          'Authorization': `Bearer ${token}` // Include the token in the Authorization header
+        },
+        body: formData
+      });
+      
+      if (!response.ok) {
+        // Try to get error details from the response
+        let errorDetails = '';
+        try {
+          const errorData = await response.json();
+          errorDetails = errorData.message || '';
+        } catch (e) {
+          // If we can't parse the error response, just use the status text
+          errorDetails = response.statusText;
+        }
+        
+        throw new Error(`Server responded with ${response.status}: ${errorDetails}`);
+      }
+      
+      // Parse the response
+      const data = await response.json();
+      
+      // Use the slug returned from the API
+      const slug = data.page.slug;
+      
+      // If your local state needs to be updated with the saved data
       await savePageData(slug, pageData);
       
       setPageSlug(slug);
