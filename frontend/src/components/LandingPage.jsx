@@ -8,7 +8,6 @@ import FloatingElements from './shared/FloatingElements';
 import SignIn from './SignIn';
 import SignUp from './SignUp';
 import { signUpUser, signInUser } from '../client';
-import Dashboard from '../pages/Dashboard';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -19,32 +18,37 @@ const LandingPage = () => {
 
   // Check for existing user session
   useEffect(() => {
-    const userData = localStorage.getItem('theend_user');
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
-  }, []);
+  const res = localStorage.getItem('Active User');
+  if (res) {
+    const parsedUser = JSON.parse(res); 
+    setUser(parsedUser.user); 
+  }
+}, []);
 
   const handleGetStarted = () => {
     navigate('/pagebuilder');
   };
 
   const handleSignUp = async(userData) => {
-    console.log(userData);
-    await signUpUser(userData);
-    setUser(userData);
-    setShowSignUp(false);
+    let res = await signUpUser(userData);
+    if (!res){
+      return
+    }
+    handleSwitchToSignIn();
   };
 
-  const handleSignIn = async(userData,r) => {
-    let user = await signInUser(userData);
-    setUser(user)
-    console.log(user);
+  const handleSignIn = async(userData) => {
+    let res = await signInUser(userData);
+    if (!res){
+      return
+    }
+    setUser(res.user);
+    localStorage.setItem('Active User', JSON.stringify(res));
     setShowSignIn(false);
   };
 
   const handleSignOut = () => {
-    localStorage.removeItem('theend_user');
+    localStorage.removeItem('Active User');
     setUser(null);
     setShowDashboard(false);
   };
