@@ -8,12 +8,15 @@ import {
 import "./index.css";
 import Home from "./pages/Home";
 import PageBuilder from "./pages/PageBuilder";
+import PageViewer from './components/PageViewer'
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/pagebuilder" element={<PageBuilder />} />
+      <Route path="/view/:slug" element={<PageViewer />} />
+      <Route path="/view/preview" element={<PageViewer />} />
     </Routes>
   );
 }

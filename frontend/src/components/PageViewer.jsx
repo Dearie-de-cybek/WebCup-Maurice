@@ -27,19 +27,48 @@ const PageViewer = () => {
           return;
         }
 
-        // Michael and Uche do your stuff here
+        // First try to get full data from sessionStorage (current session)
+        const sessionData = sessionStorage.getItem(`theend_page_${slug}`);
+        if (sessionData) {
+          const page = JSON.parse(sessionData);
+          setPageData(page);
+          setViews(page.views || 0);
+          setLoading(false);
+          return;
+        }
+
+        // Fall back to localStorage Mike and Uche
         const pages = JSON.parse(localStorage.getItem('theend_pages') || '{}');
         const page = pages[slug];
         
         if (page) {
-          setPageData(page);
+          // Create a display-friendly version with placeholder content for missing media
+          const displayData = {
+            ...page,
+            backgroundImage: page.backgroundImage?.hasImage ? {
+              ...page.backgroundImage,
+              url: '/api/placeholder/1920/1080', // Placeholder image
+              placeholder: true
+            } : null,
+            music: page.music?.hasAudio ? {
+              ...page.music,
+              url: null, // Can't play audio from storage
+              disabled: true
+            } : page.music // Keep presets as they don't need actual files
+          };
+          
+          setPageData(displayData);
           setViews(page.views || 0);
           
           // Increment view count
           page.views = (page.views || 0) + 1;
           pages[slug] = page;
-          localStorage.setItem('theend_pages', JSON.stringify(pages));
-          setViews(page.views);
+          try {
+            localStorage.setItem('theend_pages', JSON.stringify(pages));
+            setViews(page.views);
+          } catch (error) {
+            console.log('Could not update view count:', error);
+          }
         } else {
           setError('Page not found');
         }

@@ -18,6 +18,12 @@ const StyleCustomizer = ({ pageData, setPageData, onNext, onPrev }) => {
       return;
     }
 
+    // Check file size (5MB limit for demo)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image too large! Please use an image smaller than 5MB for best performance.');
+      return;
+    }
+
     setUploadingImage(true);
     
     try {
@@ -36,6 +42,7 @@ const StyleCustomizer = ({ pageData, setPageData, onNext, onPrev }) => {
       reader.readAsDataURL(file);
     } catch (error) {
       console.error('Error uploading image:', error);
+      alert('Failed to upload image. Please try again.');
       setUploadingImage(false);
     }
   };
@@ -44,6 +51,12 @@ const StyleCustomizer = ({ pageData, setPageData, onNext, onPrev }) => {
   const handleMusicUpload = async (file) => {
     if (!file || !file.type.startsWith('audio/')) {
       alert('Please upload an audio file');
+      return;
+    }
+
+    // Check file size (10MB limit for demo)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Audio file too large! Please use a file smaller than 10MB for best performance.');
       return;
     }
 
@@ -65,6 +78,7 @@ const StyleCustomizer = ({ pageData, setPageData, onNext, onPrev }) => {
       reader.readAsDataURL(file);
     } catch (error) {
       console.error('Error uploading music:', error);
+      alert('Failed to upload audio. Please try again.');
       setUploadingMusic(false);
     }
   };
@@ -170,7 +184,7 @@ const StyleCustomizer = ({ pageData, setPageData, onNext, onPrev }) => {
                       Drag & drop an image, or click to browse
                     </p>
                     <p className="text-sm text-gray-500 mb-4">
-                      Supports: JPG, PNG, GIF (Max 10MB)
+                      Supports: JPG, PNG, GIF (Max 5MB)
                     </p>
                     <button
                       onClick={() => fileInputRef.current?.click()}
@@ -235,7 +249,7 @@ const StyleCustomizer = ({ pageData, setPageData, onNext, onPrev }) => {
                       <Music className="w-10 h-10 text-gray-400 mx-auto mb-3" />
                       <p className="text-gray-600 mb-3">Upload your own music</p>
                       <p className="text-sm text-gray-500 mb-4">
-                        Supports: MP3, WAV, M4A (Max 25MB)
+                        Supports: MP3, WAV, M4A (Max 10MB)
                       </p>
                       <button
                         onClick={() => musicInputRef.current?.click()}

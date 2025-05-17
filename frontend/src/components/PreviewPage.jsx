@@ -22,28 +22,93 @@ const PreviewPage = ({ pageData, onPrev }) => {
   };
 
   const savePageData = (slug, data) => {
-    //Michael and Uche do your stuff here
-    const pages = JSON.parse(localStorage.getItem('theend_pages') || '{}');
-    pages[slug] = {
-      ...data,
-      createdAt: new Date().toISOString(),
-      views: 0
-    };
-    localStorage.setItem('theend_pages', JSON.stringify(pages));
+    try {
+      // In production, files would be uploaded to server Mike and Uche
+      const lightweightData = {
+        ...data,
+        // Replace actual file data with metadata only
+        backgroundImage: data.backgroundImage ? {
+          name: data.backgroundImage.name,
+          size: data.backgroundImage.size,
+          hasImage: true
+        } : null,
+        music: data.music ? {
+          name: data.music.name,
+          size: data.music.size || null,
+          preset: data.music.preset || null,
+          hasAudio: !!data.music.url && !data.music.preset
+        } : null,
+        createdAt: new Date().toISOString(),
+        views: 0
+      };
+
+      const pages = JSON.parse(localStorage.getItem('theend_pages') || '{}');
+      pages[slug] = lightweightData;
+      localStorage.setItem('theend_pages', JSON.stringify(pages));
+      
+      // Store the actual page data with files in sessionStorage for current session
+      const fullData = {
+        ...data,
+        createdAt: new Date().toISOString(),
+        views: 0
+      };
+      sessionStorage.setItem(`theend_page_${slug}`, JSON.stringify(fullData));
+      
+    } catch (error) {
+      if (error.name === 'QuotaExceededError') {
+        // Storage quota exceeded, let's clear old pages and try again
+        try {
+          const pages = JSON.parse(localStorage.getItem('theend_pages') || '{}');
+          const pageKeys = Object.keys(pages);
+          
+          // If we have more than 5 pages, remove the oldest ones
+          if (pageKeys.length >= 5) {
+            const sortedPages = pageKeys
+              .map(key => ({ key, createdAt: pages[key].createdAt }))
+              .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            
+            // Remove oldest pages
+            for (let i = 0; i < Math.min(3, sortedPages.length); i++) {
+              delete pages[sortedPages[i].key];
+              sessionStorage.removeItem(`theend_page_${sortedPages[i].key}`);
+            }
+            
+            localStorage.setItem('theend_pages', JSON.stringify(pages));
+          }
+          
+          // Try saving again with cleaned storage
+          savePageData(slug, data);
+        } catch (secondError) {
+          console.error('Failed to save page data even after cleanup:', secondError);
+          throw new Error('Storage quota exceeded. Please try with smaller files or clear browser storage.');
+        }
+      } else {
+        throw error;
+      }
+    }
   };
 
   const handlePublish = async () => {
     setIsPublishing(true);
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const slug = generateSlug();
-    savePageData(slug, pageData);
-    
-    setPageSlug(slug);
-    setIsPublished(true);
-    setIsPublishing(false);
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const slug = generateSlug();
+      await savePageData(slug, pageData);
+      
+      setPageSlug(slug);
+      setIsPublished(true);
+    } catch (error) {
+      console.error('Error publishing page:', error);
+      
+      // Show user-friendly error message
+      const errorMessage = error.message || 'Failed to publish page. Please try again.';
+      alert(`Publication failed: ${errorMessage}\n\nTip: Try using smaller image files (< 1MB) or remove background music.`);
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   const getShareUrl = () => {
