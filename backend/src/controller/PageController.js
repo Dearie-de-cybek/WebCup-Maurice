@@ -9,9 +9,8 @@ class PageController {
   // Middleware for handling file uploads
   static uploadFiles() {
     return upload.fields([
-      { name: "pictures", maxCount: 10 },
-      { name: "music", maxCount: 1 },
-      { name: "video", maxCount: 1 },
+      { name: "images", maxCount: 10 },
+      { name: "backgroundImage", maxCount: 1 },
     ]);
   }
 
@@ -20,10 +19,14 @@ class PageController {
       const {
         title,
         tone,
-        message,
-        sub_message,
-        background_color,
-        text_color,
+        mainMessage,
+        subMessage,
+        animationStyle,
+        backgroundColor,
+        fontFamily,
+        textColor,
+        textSize,
+        music,
       } = req.body;
 
       // Get user_uuid from authenticated user
@@ -32,25 +35,34 @@ class PageController {
       // Generate slug from title
       const slug = slugify(title);
 
-      // Handle file paths
-      const pictures = req.files["pictures"]
-        ? req.files["pictures"].map((file) => file.path)
-        : [];
-      const music = req.files["music"] ? req.files["music"][0].path : null;
-      const video = req.files["video"] ? req.files["video"][0].path : null;
+      // Handle file paths for images (completely optional)
+      const images = req.files["images"]
+        ? req.files["images"].map((file) => ({
+            url: file.path,
+            caption: "", // Default empty caption
+          }))
+        : []; // Empty array if no images
+
+      // Handle background image (optional)
+      const backgroundImage = req.files["backgroundImage"]
+        ? req.files["backgroundImage"][0].path
+        : null;
 
       const newPage = new Page({
         title,
         user_uuid,
         slug,
         tone,
-        message,
-        sub_message,
-        pictures,
-        music,
-        video,
-        background_color,
-        text_color,
+        mainMessage,
+        subMessage,
+        images, // Will be empty array if no images
+        music: music ? JSON.parse(music) : null,
+        animationStyle,
+        backgroundColor,
+        backgroundImage, // Will be null if not provided
+        fontFamily,
+        textColor,
+        textSize,
         click_count: 0,
       });
 
@@ -62,11 +74,16 @@ class PageController {
         title: savedPage.title,
         slug: savedPage.slug,
         tone: savedPage.tone,
-        message: savedPage.message,
-        sub_message: savedPage.sub_message,
-        pictures: savedPage.pictures,
+        mainMessage: savedPage.mainMessage,
+        subMessage: savedPage.subMessage,
+        images: savedPage.images,
         music: savedPage.music,
-        video: savedPage.video,
+        animationStyle: savedPage.animationStyle,
+        backgroundColor: savedPage.backgroundColor,
+        backgroundImage: savedPage.backgroundImage,
+        fontFamily: savedPage.fontFamily,
+        textColor: savedPage.textColor,
+        textSize: savedPage.textSize,
         click_count: savedPage.click_count,
         createdAt: savedPage.createdAt,
       };
@@ -99,7 +116,7 @@ class PageController {
   async updatePage(req, res) {
     try {
       const user_uuid = req.user.uuid;
-      const { title, ...otherUpdates } = req.body;
+      const { title, music, ...otherUpdates } = req.body;
 
       // Find the existing page first
       const existingPage = await Page.findOne({
@@ -120,30 +137,38 @@ class PageController {
         updates.slug = slugify(title);
       }
 
+      // Parse music if provided
+      if (music) {
+        updates.music = JSON.parse(music);
+      }
+
       // Handle file uploads
       if (req.files) {
-        // Delete old files if new ones are uploaded
-        if (req.files["pictures"]) {
-          existingPage.pictures.forEach((picture) => {
-            if (fs.existsSync(picture)) {
-              fs.unlinkSync(picture);
+        // Handle images update
+        if (req.files["images"]) {
+          // Delete old images
+          existingPage.images.forEach((image) => {
+            if (fs.existsSync(image.url)) {
+              fs.unlinkSync(image.url);
             }
           });
-          updates.pictures = req.files["pictures"].map((file) => file.path);
+          // Add new images
+          updates.images = req.files["images"].map((file) => ({
+            url: file.path,
+            caption: "", // Default empty caption
+          }));
         }
 
-        if (req.files["music"] && existingPage.music) {
-          if (fs.existsSync(existingPage.music)) {
-            fs.unlinkSync(existingPage.music);
+        // Handle background image update
+        if (req.files["backgroundImage"]) {
+          // Delete old background image if exists
+          if (
+            existingPage.backgroundImage &&
+            fs.existsSync(existingPage.backgroundImage)
+          ) {
+            fs.unlinkSync(existingPage.backgroundImage);
           }
-          updates.music = req.files["music"][0].path;
-        }
-
-        if (req.files["video"] && existingPage.video) {
-          if (fs.existsSync(existingPage.video)) {
-            fs.unlinkSync(existingPage.video);
-          }
-          updates.video = req.files["video"][0].path;
+          updates.backgroundImage = req.files["backgroundImage"][0].path;
         }
       }
 
@@ -189,21 +214,18 @@ class PageController {
           .json({ error: "Page not found or not owned by user" });
       }
 
-      // Delete associated files
-      if (page.pictures) {
-        page.pictures.forEach((picture) => {
-          if (fs.existsSync(picture)) {
-            fs.unlinkSync(picture);
+      // Delete associated images
+      if (page.images) {
+        page.images.forEach((image) => {
+          if (fs.existsSync(image.url)) {
+            fs.unlinkSync(image.url);
           }
         });
       }
 
-      if (page.music && fs.existsSync(page.music)) {
-        fs.unlinkSync(page.music);
-      }
-
-      if (page.video && fs.existsSync(page.video)) {
-        fs.unlinkSync(page.video);
+      // Delete background image
+      if (page.backgroundImage && fs.existsSync(page.backgroundImage)) {
+        fs.unlinkSync(page.backgroundImage);
       }
 
       // Delete the page from database
