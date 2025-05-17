@@ -310,6 +310,59 @@ class PageController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  async addVoteToPage(req, res) {
+    try {
+      const user_uuid = req.user.uuid;
+      const { pageId } = req.params;
+  
+      const page = await Page.findById(pageId);
+      if (!page) {
+        return res.status(404).json({ message: "Page not found" });
+      }
+  
+      // Add user_uuid to votes (allowing duplicates)
+      page.votes.push(user_uuid);
+      await page.save();
+  
+      res.status(200).json({
+        message: "Vote added successfully",
+        votes: page.votes,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+  
+  async removeVoteFromPage(req, res) {
+    try {
+      const user_uuid = req.user.uuid;
+      const { pageId } = req.params;
+  
+      const page = await Page.findById(pageId);
+      if (!page) {
+        return res.status(404).json({ message: "Page not found" });
+      }
+  
+      // Find index of one occurrence of user_uuid in the votes array
+      const index = page.votes.indexOf(user_uuid);
+      if (index === -1) {
+        return res.status(400).json({ message: "User has not voted on this page" });
+      }
+  
+      // Remove one occurrence of the user's vote
+      page.votes.splice(index, 1);
+      await page.save();
+  
+      res.status(200).json({
+        message: "Vote removed successfully",
+        votes: page.votes,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+  
 }
 
 module.exports = PageController;
