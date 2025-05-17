@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Share2, Eye } from 'lucide-react';
 
-// Import our new components
+
 import ToneBasedBackgroundEffects from './ToneBasedBackgroundEffects';
 import AudioPlayer from './AudioPlayer';
 import ImageCarousel from './ImageCarousel';
