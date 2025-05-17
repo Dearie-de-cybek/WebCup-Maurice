@@ -3,7 +3,7 @@ import React, { useRef, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import * as THREE from 'three';
 
-const ThreeVotingUniverse = ({ pages, selectedPlanet, onPlanetSelect, cameraPosition, voteEffect }) => {
+const ProfessionalThreeUniverse = ({ pages, selectedPlanet, onPlanetSelect, cameraPosition, voteEffect }) => {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const rendererRef = useRef(null);
@@ -615,4 +615,4 @@ const ThreeVotingUniverse = ({ pages, selectedPlanet, onPlanetSelect, cameraPosi
   );
 };
 
-export default ThreeVotingUniverse;
+export default ProfessionalThreeUniverse;
