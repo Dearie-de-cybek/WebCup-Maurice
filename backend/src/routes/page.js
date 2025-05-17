@@ -1,6 +1,6 @@
 const express = require("express");
 const PageController = require("../controller/PageController");
-const isAuthenticated  = require("../middlewares/auth");
+const isAuthenticated = require("../middlewares/auth");
 const useCatchErrors = require("../error/catchErrors");
 
 class PageRoute {
@@ -14,45 +14,49 @@ class PageRoute {
   }
 
   initializeRoutes() {
-    // Create a new page (authenticated)
+    // Create a new page (authenticated) with file uploads
     this.router.post(
       `${this.path}/store`,
       isAuthenticated,
-      useCatchErrors(this.pageController.createPage)
+      this.pageController.uploadFiles(),
+      useCatchErrors(this.pageController.createPage.bind(this.pageController))
     );
 
     // Get all pages for authenticated user
     this.router.get(
       `${this.path}/all`,
       isAuthenticated,
-      useCatchErrors(this.pageController.getUserPages)
+      useCatchErrors(this.pageController.getUserPages.bind(this.pageController))
     );
 
     // Get specific page by ID (authenticated, user must own page)
     this.router.get(
       `${this.path}/show/:id`,
       isAuthenticated,
-      useCatchErrors(this.pageController.getPageById)
+      useCatchErrors(this.pageController.getPageById.bind(this.pageController))
     );
 
-    // Update a page (authenticated, user must own page)
+    // Update a page (authenticated, user must own page) with file uploads
     this.router.patch(
       `${this.path}/update/:id`,
       isAuthenticated,
-      useCatchErrors(this.pageController.updatePage)
+      this.pageController.uploadFiles(),
+      useCatchErrors(this.pageController.updatePage.bind(this.pageController))
     );
 
     // Delete a page (authenticated, user must own page)
     this.router.delete(
       `${this.path}/delete/:id`,
       isAuthenticated,
-      useCatchErrors(this.pageController.deletePage)
+      useCatchErrors(this.pageController.deletePage.bind(this.pageController))
     );
 
     // Public route to get page by slug (no authentication required)
     this.router.get(
       `${this.path}/public/:slug`,
-      useCatchErrors(this.pageController.getPageBySlug)
+      useCatchErrors(
+        this.pageController.getPageBySlug.bind(this.pageController)
+      )
     );
   }
 }
