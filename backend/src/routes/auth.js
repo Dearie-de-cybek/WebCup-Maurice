@@ -19,6 +19,11 @@ class AuthRoute {
       `${this.path}/register`,
       useCatchErrors(this.authController.register)
     );
+
+    this.router.post(
+      `${this.path}/login`,
+      useCatchErrors(this.authController.login)
+    );
   }
 }
 
