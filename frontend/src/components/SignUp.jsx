@@ -1,13 +1,15 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Skull, Flame } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Skull, Flame } from 'lucide-react';
 
-const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
+const SignUp = ({ onClose, onSignIn, onSwitchToSignIn }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
   const [loading, setLoading] = useState(false);
   const audioContextRef = useRef(null);
@@ -131,9 +133,9 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
     
     const audioContext = audioContextRef.current;
     
-    // Create deep, ominous voice-like effect
-    const frequencies = [80, 120, 160, 100, 140, 90, 110, 130];
-    const timings = [0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1];
+    // Create deep, ominous voice-like effect for new user
+    const frequencies = [60, 90, 120, 80, 110, 70, 100, 130];
+    const timings = [0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8];
     
     frequencies.forEach((freq, index) => {
       const oscillator = audioContext.createOscillator();
@@ -148,32 +150,39 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
       oscillator.type = 'sawtooth';
       
       filterNode.type = 'lowpass';
-      filterNode.frequency.setValueAtTime(400, audioContext.currentTime);
+      filterNode.frequency.setValueAtTime(350, audioContext.currentTime);
       
       const startTime = audioContext.currentTime + timings[index];
       gainNode.gain.setValueAtTime(0, startTime);
-      gainNode.gain.linearRampToValueAtTime(0.15, startTime + 0.1);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + 0.25);
+      gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.15);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + 0.3);
       
       oscillator.start(startTime);
-      oscillator.stop(startTime + 0.25);
+      oscillator.stop(startTime + 0.3);
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Basic validation
+    if (formData.password !== formData.confirmPassword) {
+      alert('Passwords do not match!');
+      return;
+    }
+    
     setLoading(true);
 
-    // Play dark lord voice when submitting
+    // Play dark lord voice when creating account
     playDarkLordVoice();
 
-    // Simulate API call for login
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Simulate API call for registration
+    await new Promise(resolve => setTimeout(resolve, 2500));
 
-    // Simulate login - in real app, validate credentials here
+    // Create user account
     const userData = {
       id: Math.random().toString(36).substring(7),
-      name: formData.email.split('@')[0],
+      name: formData.name,
       email: formData.email,
       joinedAt: new Date().toISOString(),
       lastLogin: new Date().toISOString()
@@ -188,9 +197,9 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
     setFormData({ ...formData, [field]: value });
   };
 
-  const handleSwitchToSignUp = () => {
+  const handleSwitchToSignIn = () => {
     playWickedLaugh();
-    onSwitchToSignUp();
+    onSwitchToSignIn();
   };
 
   const containerVariants = {
@@ -260,7 +269,7 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
         
         {/* Improved Light Beams */}
         <motion.div
-          className="absolute top-0 left-1/4 w-0.5 sm:w-1 h-full bg-gradient-to-b from-red-500/40 via-red-600/20 to-transparent"
+          className="absolute top-0 left-1/4 w-0.5 sm:w-1 h-full bg-gradient-to-b from-purple-500/40 via-purple-600/20 to-transparent"
           animate={{
             opacity: [0.2, 0.8, 0.2],
             scaleX: [1, 1.8, 1],
@@ -268,7 +277,7 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute top-0 right-1/3 w-0.5 sm:w-1 h-full bg-gradient-to-b from-purple-500/40 via-purple-600/20 to-transparent"
+          className="absolute top-0 right-1/3 w-0.5 sm:w-1 h-full bg-gradient-to-b from-red-500/40 via-red-600/20 to-transparent"
           animate={{
             opacity: [0.3, 1, 0.3],
             scaleX: [1, 2.2, 1],
@@ -286,37 +295,37 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
         className="relative w-full max-w-sm sm:max-w-md mx-auto"
       >
         {/* Fixed Glowing Border Container */}
-        <div className="relative bg-gradient-to-br from-gray-900 via-red-900/80 to-black rounded-2xl overflow-hidden">
+        <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/80 to-black rounded-2xl overflow-hidden">
           {/* Animated Glowing Border */}
           <motion.div
             className="absolute inset-0 rounded-2xl"
             animate={{
               background: [
-                'linear-gradient(45deg, rgba(239, 68, 68, 0.5), rgba(147, 51, 234, 0.5), rgba(239, 68, 68, 0.5))',
-                'linear-gradient(45deg, rgba(147, 51, 234, 0.8), rgba(239, 68, 68, 0.8), rgba(147, 51, 234, 0.8))',
-                'linear-gradient(45deg, rgba(239, 68, 68, 0.5), rgba(147, 51, 234, 0.5), rgba(239, 68, 68, 0.5))'
+                'linear-gradient(45deg, rgba(147, 51, 234, 0.5), rgba(239, 68, 68, 0.5), rgba(147, 51, 234, 0.5))',
+                'linear-gradient(45deg, rgba(239, 68, 68, 0.8), rgba(147, 51, 234, 0.8), rgba(239, 68, 68, 0.8))',
+                'linear-gradient(45deg, rgba(147, 51, 234, 0.5), rgba(239, 68, 68, 0.5), rgba(147, 51, 234, 0.5))'
               ],
               boxShadow: [
-                '0 0 30px rgba(239, 68, 68, 0.3)',
-                '0 0 60px rgba(239, 68, 68, 0.6), 0 0 90px rgba(147, 51, 234, 0.4)',
-                '0 0 30px rgba(239, 68, 68, 0.3)'
+                '0 0 30px rgba(147, 51, 234, 0.3)',
+                '0 0 60px rgba(147, 51, 234, 0.6), 0 0 90px rgba(239, 68, 68, 0.4)',
+                '0 0 30px rgba(147, 51, 234, 0.3)'
               ]
             }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
           />
           
           {/* Inner content container */}
-          <div className="relative bg-gradient-to-br from-gray-900 via-red-900 to-black m-1 rounded-2xl">
+          <div className="relative bg-gradient-to-br from-gray-900 via-purple-900 to-black m-1 rounded-2xl">
             <div className="p-6 sm:p-8">
               {/* Header */}
               <motion.div variants={itemVariants} className="text-center mb-6 sm:mb-8">
                 <motion.div
-                  className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-red-600 to-purple-600 rounded-full mb-4"
+                  className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-purple-600 to-red-600 rounded-full mb-4"
                   animate={{
                     boxShadow: [
-                      "0 0 20px rgba(239, 68, 68, 0.5)",
-                      "0 0 40px rgba(239, 68, 68, 0.8)",
-                      "0 0 20px rgba(239, 68, 68, 0.5)"
+                      "0 0 20px rgba(147, 51, 234, 0.5)",
+                      "0 0 40px rgba(147, 51, 234, 0.8)",
+                      "0 0 20px rgba(147, 51, 234, 0.5)"
                     ],
                     scale: [1, 1.05, 1]
                   }}
@@ -326,10 +335,10 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
                 </motion.div>
                 
                 <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
-                  Enter the Void
+                  Join the End
                 </h2>
-                <p className="text-red-300 text-xs sm:text-sm px-2">
-                  Welcome back to your realm of farewells
+                <p className="text-purple-300 text-xs sm:text-sm px-2">
+                  Begin your journey into darkness
                 </p>
               </motion.div>
 
@@ -337,14 +346,14 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
               <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                 <motion.div variants={itemVariants} className="relative">
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-red-400" />
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
                     <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleChange('email', e.target.value)}
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => handleChange('name', e.target.value)}
                       onFocus={playCryingSound}
-                      placeholder="Email Address"
-                      className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-black/50 border border-red-500/30 rounded-lg text-white placeholder-red-300/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all text-sm sm:text-base"
+                      placeholder="Full Name"
+                      className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-black/50 border border-purple-500/30 rounded-lg text-white placeholder-purple-300/50 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all text-sm sm:text-base"
                       required
                     />
                   </div>
@@ -352,23 +361,53 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
 
                 <motion.div variants={itemVariants} className="relative">
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-red-400" />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => handleChange('email', e.target.value)}
+                      onFocus={playCryingSound}
+                      placeholder="Email Address"
+                      className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-black/50 border border-purple-500/30 rounded-lg text-white placeholder-purple-300/50 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all text-sm sm:text-base"
+                      required
+                    />
+                  </div>
+                </motion.div>
+
+                <motion.div variants={itemVariants} className="relative">
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={formData.password}
                       onChange={(e) => handleChange('password', e.target.value)}
                       onFocus={playCryingSound}
                       placeholder="Password"
-                      className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-3 sm:py-4 bg-black/50 border border-red-500/30 rounded-lg text-white placeholder-red-300/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all text-sm sm:text-base"
+                      className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-3 sm:py-4 bg-black/50 border border-purple-500/30 rounded-lg text-white placeholder-purple-300/50 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all text-sm sm:text-base"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-400 hover:text-red-300"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-400 hover:text-purple-300"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
                     </button>
+                  </div>
+                </motion.div>
+
+                <motion.div variants={itemVariants} className="relative">
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={formData.confirmPassword}
+                      onChange={(e) => handleChange('confirmPassword', e.target.value)}
+                      onFocus={playCryingSound}
+                      placeholder="Confirm Password"
+                      className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-black/50 border border-purple-500/30 rounded-lg text-white placeholder-purple-300/50 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all text-sm sm:text-base"
+                      required
+                    />
                   </div>
                 </motion.div>
 
@@ -377,9 +416,9 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
                   variants={itemVariants}
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 sm:py-4 bg-gradient-to-r from-red-600 to-purple-600 text-white font-bold rounded-lg hover:from-red-700 hover:to-purple-700 transition-all transform hover:scale-105 disabled:opacity-50 disabled:transform-none flex items-center justify-center gap-2 sm:gap-3 text-sm sm:text-base"
+                  className="w-full py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-red-600 text-white font-bold rounded-lg hover:from-purple-700 hover:to-red-700 transition-all transform hover:scale-105 disabled:opacity-50 disabled:transform-none flex items-center justify-center gap-2 sm:gap-3 text-sm sm:text-base"
                   whileHover={{ 
-                    boxShadow: "0 0 40px rgba(239, 68, 68, 0.6)",
+                    boxShadow: "0 0 40px rgba(147, 51, 234, 0.6)",
                     scale: 1.02
                   }}
                   whileTap={{ scale: 0.98 }}
@@ -387,27 +426,27 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
                   {loading ? (
                     <>
                       <div className="animate-spin w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full" />
-                      Entering the Void...
+                      Joining the End...
                     </>
                   ) : (
                     <>
                       <Flame className="w-4 h-4 sm:w-5 sm:h-5" />
-                      Enter the Void
+                      Begin the End
                       <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                     </>
                   )}
                 </motion.button>
 
-                {/* Switch to SignUp */}
+                {/* Switch to SignIn */}
                 <motion.div variants={itemVariants} className="text-center">
                   <button
                     type="button"
-                    onClick={handleSwitchToSignUp}
-                    className="text-red-300 hover:text-white transition-colors text-xs sm:text-sm"
+                    onClick={handleSwitchToSignIn}
+                    className="text-purple-300 hover:text-white transition-colors text-xs sm:text-sm"
                   >
-                    New to the darkness? 
+                    Already embraced the darkness? 
                     <span className="underline font-semibold ml-1">
-                      Join the End
+                      Enter the Void
                     </span>
                   </button>
                 </motion.div>
@@ -419,7 +458,7 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="w-5 h-5 sm:w-6 sm:h-6 text-red-400 opacity-40"
+                className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400 opacity-40"
               >
                 ⚡
               </motion.div>
@@ -433,7 +472,7 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
                   rotate: [0, 10, -10, 0]
                 }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="w-6 h-6 sm:w-8 sm:h-8 text-purple-400 opacity-40"
+                className="w-6 h-6 sm:w-8 sm:h-8 text-red-400 opacity-40"
               >
                 🔥
               </motion.div>
@@ -458,4 +497,4 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
   );
 };
 
-export default SignIn;
+export default SignUp;
