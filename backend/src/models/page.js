@@ -72,6 +72,11 @@ const pageSchema = new Schema(
       type: String,
       required: false,
     },
+    autoplayMusic: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
     click_count: {
       type: Number, // Changed from String to Number
       default: 0,

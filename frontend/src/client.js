@@ -6,11 +6,16 @@ const api = axios.create({
 
 // Login
 export const signInUser = async (userData) => {
-  const {email , password} = userData;
+  const { email, password } = userData;
   try {
     const response = await api.post("/auth/login", { email, password });
-    const user = response.data.user; 
-    return user
+    const user = response.data;
+
+    // Store user data and token in local storage
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("token", user.token);
+
+    return user;
   } catch (error) {
     const errorMessage = error.response?.data?.error || error.message || "Login failed";
     alert(`Login failed: ${errorMessage}`);
