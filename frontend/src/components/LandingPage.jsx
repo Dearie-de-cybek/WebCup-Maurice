@@ -34,6 +34,66 @@ const CustomCursor = () => {
     };
   }, []);
 
+  const handleGetStarted = () => {
+    navigate('/pagebuilder');
+  };
+
+  const handleSignUp = async(userData) => {
+    let res = await signUpUser(userData);
+    if (!res){
+      return
+    }
+    handleSwitchToSignIn();
+  };
+
+  const handleSignIn = async(userData) => {
+    let res = await signInUser(userData);
+    if (!res){
+      return
+    }
+    setUser(res.user);
+    localStorage.setItem('Active User', JSON.stringify(res));
+    setShowSignIn(false);
+    setShowDashboard(true);
+  };
+
+  const handleSignOut = () => {
+    localStorage.clear();
+    setUser(null);
+    setShowDashboard(false);
+  };
+
+  const openDashboard = () => {
+    setShowDashboard(true);
+  };
+
+  const handleSwitchToSignUp = () => {
+    setShowSignIn(false);
+    setShowSignUp(true);
+  };
+
+  const handleSwitchToSignIn = () => {
+    setShowSignUp(false);
+    setShowSignIn(true);
+  };
+
+  const closeModals = () => {
+    setShowSignIn(false);
+    setShowSignUp(false);
+  };
+
+  // If dashboard is open, show it
+  if (showDashboard) {
+    const token = localStorage.getItem("token");
+    return (
+      <Dashboard 
+        user={user} 
+        token={token}
+        onSignOut={handleSignOut}
+        onClose={() => setShowDashboard(false)}
+      />
+    );
+  }
   return (
     <motion.div
       className="fixed pointer-events-none z-50 mix-blend-difference"

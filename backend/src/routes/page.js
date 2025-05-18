@@ -17,16 +17,16 @@ class PageRoute {
   initializeRoutes() {
     // Multer middleware configuration
     const uploadFiles = upload.fields([
-      { name: 'pictures', maxCount: 10 },
-      { name: 'music', maxCount: 1 },
-      { name: 'video', maxCount: 1 }
+      { name: "pictures", maxCount: 10 },
+      { name: "music", maxCount: 1 },
+      { name: "video", maxCount: 1 },
     ]);
 
     // Create a new page (authenticated)
     this.router.post(
-      `${this.path}/store`,  // Ensure this.path is defined
-      PageController.uploadFiles(),  // Instantiate Multer middleware
-      isAuthenticated,  // Auth middleware
+      `${this.path}/store`, // Ensure this.path is defined
+      PageController.uploadFiles(), // Instantiate Multer middleware
+      isAuthenticated, // Auth middleware
       useCatchErrors(this.pageController.createPage.bind(this.pageController))
     );
 
@@ -62,7 +62,27 @@ class PageRoute {
     // Public route to get page by slug (no authentication required)
     this.router.get(
       `${this.path}/public/:slug`,
-      useCatchErrors(this.pageController.getPageBySlug.bind(this.pageController))
+      useCatchErrors(
+        this.pageController.getPageBySlug.bind(this.pageController)
+      )
+    );
+    
+    // Add vote
+    this.router.post(
+      `${this.path}/:pageId/vote`,
+      isAuthenticated,
+      useCatchErrors(
+        this.pageController.addVoteToPage.bind(this.pageController)
+      )
+    );
+
+    // Remove vote
+    this.router.delete(
+      `${this.path}/:pageId/vote`,
+      isAuthenticated,
+      useCatchErrors(
+        this.pageController.removeVoteFromPage.bind(this.pageController)
+      )
     );
   }
 }

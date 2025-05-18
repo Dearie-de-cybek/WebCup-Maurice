@@ -81,6 +81,10 @@ const pageSchema = new Schema(
       type: Number, // Changed from String to Number
       default: 0,
     },
+    votes: {
+      type: [String], // Array of user UUIDs
+      default: [],    // Initialize with an empty array
+    },
   },
   {
     timestamps: true,

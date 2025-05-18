@@ -1,3 +1,4 @@
+
 /* eslint-disable no-unused-vars */
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -164,7 +165,6 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
     e.preventDefault();
     setLoading(true);
 
-
     // Play dark lord voice when submitting
     playDarkLordVoice();
 
@@ -215,6 +215,9 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
     }
   };
 
+  // Emotional emojis array
+  const emotionalEmojis = ['🎤', '💔', '😢', '😇', '😞', '😭', '👼', '🥺', '😴', '💔', '😵', '😪', '😔', '🎭', '💀', '🔇', '😿', '👻', '⚰️', '🕯️'];
+
   return (
     <motion.div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -222,55 +225,58 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      {/* Dramatic Background Overlay */}
+      {/* Dark Background Overlay */}
       <motion.div 
-        className="absolute inset-0 bg-black"
-        initial={{ opacity: 0.7 }}
-        animate={{ opacity: 0.9 }}
+        className="absolute inset-0 bg-gray-900"
+        initial={{ opacity: 0.8 }}
+        animate={{ opacity: 0.95 }}
         onClick={onClose} 
       />
       
-      {/* Enhanced Background Effects */}
+      {/* Floating Emotional Emojis Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Animated Fire Particles */}
-        {[...Array(15)].map((_, i) => (
+        {emotionalEmojis.map((emoji, i) => (
           <motion.div
             key={i}
-            className="absolute w-1 h-1 sm:w-2 sm:h-2 bg-orange-500 rounded-full"
+            className="absolute text-2xl sm:text-3xl opacity-20"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
             }}
             animate={{
-              y: [0, -60, 0],
-              opacity: [0.2, 1, 0.2],
-              scale: [0.5, 1.8, 0.5],
+              y: [0, -80, 0],
+              x: [0, Math.random() * 40 - 20, 0],
+              opacity: [0.1, 0.3, 0.1],
+              rotate: [0, Math.random() * 360, 0],
+              scale: [0.8, 1.2, 0.8],
             }}
             transition={{
-              duration: 4 + Math.random() * 3,
+              duration: 6 + Math.random() * 4,
               repeat: Infinity,
-              delay: Math.random() * 3,
+              delay: Math.random() * 4,
               ease: "easeInOut"
             }}
-          />
+          >
+            {emoji}
+          </motion.div>
         ))}
         
-        {/* Improved Light Beams */}
+        {/* Subtle Purple Glow Effects */}
         <motion.div
-          className="absolute top-0 left-1/4 w-0.5 sm:w-1 h-full bg-gradient-to-b from-red-500/40 via-red-600/20 to-transparent"
+          className="absolute top-1/4 left-1/3 w-32 h-32 bg-purple-900 opacity-10 rounded-full blur-3xl"
           animate={{
-            opacity: [0.2, 0.8, 0.2],
-            scaleX: [1, 1.8, 1],
+            scale: [1, 1.5, 1],
+            opacity: [0.05, 0.15, 0.05],
           }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute top-0 right-1/3 w-0.5 sm:w-1 h-full bg-gradient-to-b from-purple-500/40 via-purple-600/20 to-transparent"
+          className="absolute bottom-1/3 right-1/4 w-40 h-40 bg-purple-800 opacity-10 rounded-full blur-3xl"
           animate={{
-            opacity: [0.3, 1, 0.3],
-            scaleX: [1, 2.2, 1],
+            scale: [1.2, 0.8, 1.2],
+            opacity: [0.08, 0.18, 0.08],
           }}
-          transition={{ duration: 4, repeat: Infinity, delay: 1.5, ease: "easeInOut" }}
+          transition={{ duration: 10, repeat: Infinity, delay: 2, ease: "easeInOut" }}
         />
       </div>
 
@@ -282,173 +288,125 @@ const SignIn = ({ onClose, onSignIn, onSwitchToSignUp }) => {
         exit="exit"
         className="relative w-full max-w-sm sm:max-w-md mx-auto"
       >
-        {/* Fixed Glowing Border Container */}
-        <div className="relative bg-gradient-to-br from-gray-900 via-red-900/80 to-black rounded-2xl overflow-hidden">
-          {/* Animated Glowing Border */}
-          <motion.div
-            className="absolute inset-0 rounded-2xl"
-            animate={{
-              background: [
-                'linear-gradient(45deg, rgba(239, 68, 68, 0.5), rgba(147, 51, 234, 0.5), rgba(239, 68, 68, 0.5))',
-                'linear-gradient(45deg, rgba(147, 51, 234, 0.8), rgba(239, 68, 68, 0.8), rgba(147, 51, 234, 0.8))',
-                'linear-gradient(45deg, rgba(239, 68, 68, 0.5), rgba(147, 51, 234, 0.5), rgba(239, 68, 68, 0.5))'
-              ],
-              boxShadow: [
-                '0 0 30px rgba(239, 68, 68, 0.3)',
-                '0 0 60px rgba(239, 68, 68, 0.6), 0 0 90px rgba(147, 51, 234, 0.4)',
-                '0 0 30px rgba(239, 68, 68, 0.3)'
-              ]
-            }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          />
-          
-          {/* Inner content container */}
-          <div className="relative bg-gradient-to-br from-gray-900 via-red-900 to-black m-1 rounded-2xl">
-            <div className="p-6 sm:p-8">
-              {/* Header */}
-              <motion.div variants={itemVariants} className="text-center mb-6 sm:mb-8">
-                <motion.div
-                  className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-red-600 to-purple-600 rounded-full mb-4"
-                  animate={{
-                    boxShadow: [
-                      "0 0 20px rgba(239, 68, 68, 0.5)",
-                      "0 0 40px rgba(239, 68, 68, 0.8)",
-                      "0 0 20px rgba(239, 68, 68, 0.5)"
-                    ],
-                    scale: [1, 1.05, 1]
-                  }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <Skull className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
-                </motion.div>
-                
-                <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
-                  Enter the Void
-                </h2>
-                <p className="text-red-300 text-xs sm:text-sm px-2">
-                  Welcome back to your realm of farewells
-                </p>
+        {/* Subtle Purple Border */}
+        <motion.div
+          className="absolute inset-0 rounded-2xl border border-purple-900/30"
+          animate={{
+            borderColor: ['rgba(88, 28, 135, 0.3)', 'rgba(107, 33, 168, 0.5)', 'rgba(88, 28, 135, 0.3)']
+          }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        />
+        
+        {/* Inner content container */}
+        <div className="relative bg-gray-800 border border-purple-900/20 rounded-2xl">
+          <div className="p-6 sm:p-8">
+            {/* Header */}
+            <motion.div variants={itemVariants} className="text-center mb-6 sm:mb-8">
+              <motion.div
+                className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-purple-900 rounded-full mb-4 border border-purple-700"
+                animate={{
+                  boxShadow: [
+                    "0 0 20px rgba(126, 34, 206, 0.3)",
+                    "0 0 30px rgba(126, 34, 206, 0.5)",
+                    "0 0 20px rgba(126, 34, 206, 0.3)"
+                  ],
+                  scale: [1, 1.05, 1]
+                }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <span className="text-2xl sm:text-3xl">💔</span>
+              </motion.div>
+              
+              <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
+                Enter the Void
+              </h2>
+              <p className="text-purple-300 text-xs sm:text-sm px-2">
+                Welcome back to your realm of farewells
+              </p>
+            </motion.div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <motion.div variants={itemVariants} className="relative">
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleChange('email', e.target.value)}
+                    onFocus={playCryingSound}
+                    placeholder="Email Address"
+                    className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-gray-900 border border-purple-900/40 rounded-lg text-white placeholder-purple-300/50 focus:border-purple-700 focus:ring-2 focus:ring-purple-900/30 transition-all text-sm sm:text-base"
+                    required
+                  />
+                </div>
               </motion.div>
 
-              {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-                <motion.div variants={itemVariants} className="relative">
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-red-400" />
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleChange('email', e.target.value)}
-                      onFocus={playCryingSound}
-                      placeholder="Email Address"
-                      className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-black/50 border border-red-500/30 rounded-lg text-white placeholder-red-300/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all text-sm sm:text-base"
-                      required
-                    />
-                  </div>
-                </motion.div>
-
-                <motion.div variants={itemVariants} className="relative">
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-red-400" />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={formData.password}
-                      onChange={(e) => handleChange('password', e.target.value)}
-                      onFocus={playCryingSound}
-                      placeholder="Password"
-                      className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-3 sm:py-4 bg-black/50 border border-red-500/30 rounded-lg text-white placeholder-red-300/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all text-sm sm:text-base"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-400 hover:text-red-300"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
-                    </button>
-                  </div>
-                </motion.div>
-
-                {/* Submit Button */}
-                <motion.button
-                  variants={itemVariants}
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3 sm:py-4 bg-gradient-to-r from-red-600 to-purple-600 text-white font-bold rounded-lg hover:from-red-700 hover:to-purple-700 transition-all transform hover:scale-105 disabled:opacity-50 disabled:transform-none flex items-center justify-center gap-2 sm:gap-3 text-sm sm:text-base"
-                  whileHover={{ 
-                    boxShadow: "0 0 40px rgba(239, 68, 68, 0.6)",
-                    scale: 1.02
-                  }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {loading ? (
-                    <>
-                      <div className="animate-spin w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full" />
-                      Entering the Void...
-                    </>
-                  ) : (
-                    <>
-                      <Flame className="w-4 h-4 sm:w-5 sm:h-5" />
-                      Enter the Void
-                      <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                    </>
-                  )}
-                </motion.button>
-
-                {/* Switch to SignUp */}
-                <motion.div variants={itemVariants} className="text-center">
+              <motion.div variants={itemVariants} className="relative">
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={(e) => handleChange('password', e.target.value)}
+                    onFocus={playCryingSound}
+                    placeholder="Password"
+                    className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-3 sm:py-4 bg-gray-900 border border-purple-900/40 rounded-lg text-white placeholder-purple-300/50 focus:border-purple-700 focus:ring-2 focus:ring-purple-900/30 transition-all text-sm sm:text-base"
+                    required
+                  />
                   <button
                     type="button"
-                    onClick={handleSwitchToSignUp}
-                    className="text-red-300 hover:text-white transition-colors text-xs sm:text-sm"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-400 hover:text-purple-300"
                   >
-                    New to the darkness? 
-                    <span className="underline font-semibold ml-1">
-                      Join the End
-                    </span>
+                    {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
                   </button>
-                </motion.div>
-              </form>
-            </div>
+                </div>
+              </motion.div>
 
-            {/* Decorative Elements */}
-            <div className="absolute top-2 sm:top-4 right-2 sm:right-4">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="w-5 h-5 sm:w-6 sm:h-6 text-red-400 opacity-40"
-              >
-                ⚡
-              </motion.div>
-            </div>
-            
-            <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4">
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.3, 1],
-                  opacity: [0.3, 0.8, 0.3],
-                  rotate: [0, 10, -10, 0]
+              {/* Submit Button */}
+              <motion.button
+                variants={itemVariants}
+                onClick={handleSubmit}
+                disabled={loading}
+                className="w-full py-3 sm:py-4 bg-purple-900 text-white font-bold rounded-lg hover:bg-purple-800 transition-all transform hover:scale-105 disabled:opacity-50 disabled:transform-none flex items-center justify-center gap-2 sm:gap-3 text-sm sm:text-base border border-purple-800"
+                whileHover={{ 
+                  boxShadow: "0 0 30px rgba(126, 34, 206, 0.4)",
+                  scale: 1.02
                 }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="w-6 h-6 sm:w-8 sm:h-8 text-purple-400 opacity-40"
+                whileTap={{ scale: 0.98 }}
               >
-                🔥
-              </motion.div>
-            </div>
+                {loading ? (
+                  <>
+                    <div className="animate-spin w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full" />
+                    Entering the Void...
+                  </>
+                ) : (
+                  <>
+                    <Flame className="w-4 h-4 sm:w-5 sm:h-5" />
+                    Enter the Void
+                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </>
+                )}
+              </motion.button>
 
-            <div className="absolute top-2 left-2 sm:top-4 sm:left-4">
-              <motion.div
-                animate={{ 
-                  opacity: [0.2, 0.7, 0.2],
-                  scale: [0.8, 1.2, 0.8]
-                }}
-                transition={{ duration: 4, repeat: Infinity, delay: 1 }}
-                className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400 opacity-30"
-              >
-                💀
+              {/* Switch to SignUp */}
+              <motion.div variants={itemVariants} className="text-center">
+                <button
+                  type="button"
+                  onClick={handleSwitchToSignUp}
+                  className="text-purple-300 hover:text-white transition-colors text-xs sm:text-sm"
+                >
+                  New to the darkness? 
+                  <span className="underline font-semibold ml-1">
+                    Join the End
+                  </span>
+                </button>
               </motion.div>
-            </div>
+            </form>
           </div>
+
+          
         </div>
       </motion.div>
     </motion.div>
