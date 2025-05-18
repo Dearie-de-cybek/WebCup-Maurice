@@ -2,24 +2,42 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, Eye, Calendar, Heart } from 'lucide-react';
+import { getUserPages } from "../services/pages";
+import { useEffect, useState } from 'react';
 
 const StatsCards = ({ userPages, totalViews, user, formatDate, onVote }) => {
   // Calculate total votes from all user pages
   const totalVotes = userPages.reduce((sum, page) => sum + (page.votes || 0), 0);
 
+  const [pages, setPages] = useState([]);
+
+  useEffect(() => {
+    const fetchUserPages = async () => {
+      try {
+        const token = localStorage.getItem("token"); 
+        const fetchedPages = await getUserPages(token);
+        setPages(fetchedPages);
+      } catch (error) {
+        console.error("Error fetching user pages:", error);
+      }
+    };
+
+    fetchUserPages();
+  }, []);
+
   const stats = [
     { 
       label: "Farewell Pages", 
-      value: userPages.length, 
+      value: pages.pages?.length || 0, 
       icon: <Calendar className="w-8 h-8" />, 
       color: "from-blue-500 to-cyan-500" 
     },
-    { 
-      label: "Total Views", 
-      value: totalViews.toLocaleString(), 
-      icon: <Eye className="w-8 h-8" />, 
-      color: "from-purple-500 to-pink-500" 
-    },
+    // { 
+    //   label: "Total Views", 
+    //   value: totalViews.toLocaleString(), 
+    //   icon: <Eye className="w-8 h-8" />, 
+    //   color: "from-purple-500 to-pink-500" 
+    // },
     { 
       label: "Total Votes", 
       value: totalVotes.toLocaleString(), 
@@ -28,7 +46,7 @@ const StatsCards = ({ userPages, totalViews, user, formatDate, onVote }) => {
     },
     { 
       label: "Member Since", 
-      value: formatDate(user.joinedAt), 
+      value: formatDate(user.createdAt), 
       icon: <Trophy className="w-8 h-8" />, 
       color: "from-amber-500 to-yellow-500" 
     }
@@ -44,7 +62,7 @@ const StatsCards = ({ userPages, totalViews, user, formatDate, onVote }) => {
     >
       <div className="max-w-7xl mx-auto px-6">
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           initial={{ y: 50, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, staggerChildren: 0.1 }}
