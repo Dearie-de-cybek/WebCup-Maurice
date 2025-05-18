@@ -1,8 +1,13 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import { motion, useScroll, useTransform, useInView, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Sparkles, Heart, Zap, User, LogOut, Code, Palette, Share } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import SignIn from './SignIn';
+import SignUp from './SignUp';
+import { signUpUser, signInUser } from '../client';
+import Dashboard from '../pages/Dashboard';
 
 // Custom cursor component
 const CustomCursor = () => {
@@ -36,66 +41,6 @@ const CustomCursor = () => {
     };
   }, []);
 
-  const handleGetStarted = () => {
-    navigate('/pagebuilder');
-  };
-
-  const handleSignUp = async(userData) => {
-    let res = await signUpUser(userData);
-    if (!res){
-      return
-    }
-    handleSwitchToSignIn();
-  };
-
-  const handleSignIn = async(userData) => {
-    let res = await signInUser(userData);
-    if (!res){
-      return
-    }
-    setUser(res.user);
-    localStorage.setItem('Active User', JSON.stringify(res));
-    setShowSignIn(false);
-    setShowDashboard(true);
-  };
-
-  const handleSignOut = () => {
-    localStorage.clear();
-    setUser(null);
-    setShowDashboard(false);
-  };
-
-  const openDashboard = () => {
-    setShowDashboard(true);
-  };
-
-  const handleSwitchToSignUp = () => {
-    setShowSignIn(false);
-    setShowSignUp(true);
-  };
-
-  const handleSwitchToSignIn = () => {
-    setShowSignUp(false);
-    setShowSignIn(true);
-  };
-
-  const closeModals = () => {
-    setShowSignIn(false);
-    setShowSignUp(false);
-  };
-
-  // If dashboard is open, show it
-  if (showDashboard) {
-    const token = localStorage.getItem("token");
-    return (
-      <Dashboard 
-        user={user} 
-        token={token}
-        onSignOut={handleSignOut}
-        onClose={() => setShowDashboard(false)}
-      />
-    );
-  }
   return (
     <motion.div
       className="fixed pointer-events-none z-50 mix-blend-difference"
@@ -232,25 +177,89 @@ const StatsCounter = ({ end, label, duration = 2 }) => {
 };
 
 // Main landing page component
-const LandingPage = ({
-  user,
-  onSignIn,
-  onSignUp,
-  onSignOut,
-  onGetStarted,
-  onOpenDashboard,
-  showSignIn,
-  setShowSignIn,
-  showSignUp,
-  setShowSignUp
-}) => {
+const LandingPage = () => {
+  const navigate = useNavigate();
   const { scrollY } = useScroll();
+  const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignUp, setShowSignUp] = useState(false);
+  const [user, setUser] = useState(null);
+  const [showDashboard, setShowDashboard] = useState(false);
   
   // Parallax transforms
   const heroY = useTransform(scrollY, [0, 1000], [0, -300]);
   const heroOpacity = useTransform(scrollY, [0, 500], [1, 0.3]);
   const featuresY = useTransform(scrollY, [300, 1200], [100, -100]);
   const statsY = useTransform(scrollY, [500, 1500], [50, -50]);
+
+  // Check for existing user session
+  useEffect(() => {
+    const res = localStorage.getItem('Active User');
+    if (res) {
+      const parsedUser = JSON.parse(res); 
+      setUser(parsedUser.user); 
+    }
+  }, []);
+
+  const handleGetStarted = () => {
+    navigate('/pagebuilder');
+  };
+
+  const handleSignUp = async(userData) => {
+    let res = await signUpUser(userData);
+    if (!res){
+      return
+    }
+    handleSwitchToSignIn();
+  };
+
+  const handleSignIn = async(userData) => {
+    let res = await signInUser(userData);
+    if (!res){
+      return
+    }
+    setUser(res.user);
+    localStorage.setItem('Active User', JSON.stringify(res));
+    setShowSignIn(false);
+    setShowDashboard(true);
+  };
+
+  const handleSignOut = () => {
+    localStorage.clear();
+    setUser(null);
+    setShowDashboard(false);
+  };
+
+  const openDashboard = () => {
+    setShowDashboard(true);
+  };
+
+  const handleSwitchToSignUp = () => {
+    setShowSignIn(false);
+    setShowSignUp(true);
+  };
+
+  const handleSwitchToSignIn = () => {
+    setShowSignUp(false);
+    setShowSignIn(true);
+  };
+
+  const closeModals = () => {
+    setShowSignIn(false);
+    setShowSignUp(false);
+  };
+
+  // If dashboard is open, show it
+  if (showDashboard) {
+    const token = localStorage.getItem("token");
+    return (
+      <Dashboard 
+        user={user} 
+        token={token}
+        onSignOut={handleSignOut}
+        onClose={() => setShowDashboard(false)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-white cursor-none overflow-x-hidden">
@@ -279,7 +288,7 @@ const LandingPage = ({
             {user ? (
               <>
                 <motion.button
-                  onClick={onOpenDashboard}
+                  onClick={openDashboard}
                   className="flex items-center gap-2 bg-slate-800/50 backdrop-blur-sm text-white px-6 py-3 rounded-lg font-medium hover:bg-slate-700/50 transition-all duration-300 interactive"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -288,7 +297,7 @@ const LandingPage = ({
                   {user.name}
                 </motion.button>
                 <motion.button
-                  onClick={onSignOut}
+                  onClick={handleSignOut}
                   className="p-3 text-slate-400 hover:text-white transition-colors interactive"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
@@ -377,7 +386,7 @@ const LandingPage = ({
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
               <motion.button
-                onClick={onGetStarted}
+                onClick={handleGetStarted}
                 className="group relative overflow-hidden bg-gradient-to-r from-purple-600 to-blue-600 text-white px-10 py-4 rounded-lg text-lg font-semibold transition-all duration-300 interactive"
                 whileHover={{ 
                   scale: 1.05,
@@ -492,7 +501,7 @@ const LandingPage = ({
               It's time to leave with style.
             </p>
             <motion.button
-              onClick={onGetStarted}
+              onClick={handleGetStarted}
               className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-12 py-4 rounded-lg text-xl font-semibold transition-all duration-300 interactive"
               whileHover={{ 
                 scale: 1.05,
@@ -513,6 +522,24 @@ const LandingPage = ({
           <p className="mt-2">Making farewells memorable, one page at a time.</p>
         </div>
       </footer>
+
+      {/* Auth Modals */}
+      <AnimatePresence>
+        {showSignIn && (
+          <SignIn
+            onClose={closeModals}
+            onSignIn={handleSignIn}
+            onSwitchToSignUp={handleSwitchToSignUp}
+          />
+        )}
+        {showSignUp && (
+          <SignUp
+            onClose={closeModals}
+            onSignIn={handleSignUp}
+            onSwitchToSignIn={handleSwitchToSignIn}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
