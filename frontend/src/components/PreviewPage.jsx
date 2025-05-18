@@ -1,7 +1,9 @@
+/* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Copy, Share2, Download, Twitter, Facebook, ExternalLink } from 'lucide-react';
+import { Copy, Share2, Download, Twitter, Facebook, LinkIcon } from 'lucide-react';
 import LivePreview from './shared/LivePreview';
+// import { storePage } from '../services/pages';
 
 const PreviewPage = ({ pageData, onPrev }) => {
   const [isPublishing, setIsPublishing] = useState(false);
@@ -22,24 +24,15 @@ const PreviewPage = ({ pageData, onPrev }) => {
 
   const savePageData = (slug, data) => {
     try {
-      // Store lightweight data without files for storage efficiency
+      // In production, files would be uploaded to server Mike and Uche
       const lightweightData = {
-        title: data.title,
-        mainMessage: data.mainMessage,
-        subMessage: data.subMessage,
-        tone: data.tone,
-        textColor: data.textColor,
-        fontFamily: data.fontFamily,
-        textSize: data.textSize,
-        animationStyle: data.animationStyle,
-        autoplayMusic: data.autoplayMusic,
-        slideshowAutoplay: data.slideshowAutoplay,
-        images: data.images ? data.images.map(img => ({
-          id: img.id,
-          name: img.name,
-          size: img.size,
+        ...data,
+        // Replace actual file data with metadata only
+        backgroundImage: data.backgroundImage ? {
+          name: data.backgroundImage.name,
+          size: data.backgroundImage.size,
           hasImage: true
-        })) : null,
+        } : null,
         music: data.music ? {
           name: data.music.name,
           size: data.music.size || null,
@@ -47,30 +40,29 @@ const PreviewPage = ({ pageData, onPrev }) => {
           hasAudio: !!data.music.url && !data.music.preset
         } : null,
         createdAt: new Date().toISOString(),
-        views: 0,
-        votes: 0
+        views: 0
       };
 
       const pages = JSON.parse(localStorage.getItem('theend_pages') || '{}');
       pages[slug] = lightweightData;
       localStorage.setItem('theend_pages', JSON.stringify(pages));
       
-      // Store the full page data with files in sessionStorage for current session
+      // Store the actual page data with files in sessionStorage for current session
       const fullData = {
         ...data,
         createdAt: new Date().toISOString(),
-        views: 0,
-        votes: 0
+        views: 0
       };
       sessionStorage.setItem(`theend_page_${slug}`, JSON.stringify(fullData));
       
     } catch (error) {
       if (error.name === 'QuotaExceededError') {
-        // Handle storage quota exceeded
+        // Storage quota exceeded, let's clear old pages and try again
         try {
           const pages = JSON.parse(localStorage.getItem('theend_pages') || '{}');
           const pageKeys = Object.keys(pages);
           
+          // If we have more than 5 pages, remove the oldest ones
           if (pageKeys.length >= 5) {
             const sortedPages = pageKeys
               .map(key => ({ key, createdAt: pages[key].createdAt }))
@@ -85,7 +77,7 @@ const PreviewPage = ({ pageData, onPrev }) => {
             localStorage.setItem('theend_pages', JSON.stringify(pages));
           }
           
-          // Try saving again
+          // Try saving again with cleaned storage
           savePageData(slug, data);
         } catch (secondError) {
           console.error('Failed to save page data even after cleanup:', secondError);
@@ -101,72 +93,92 @@ const PreviewPage = ({ pageData, onPrev }) => {
     setIsPublishing(true);
     
     try {
-      // Get the authentication token
+      // Get the authentication token from local storage
       const token = localStorage.getItem('token');
       
       if (!token) {
         throw new Error('Authentication token not found. Please log in again.');
       }
       
-      // Create FormData for file uploads
+      // Create a FormData object to handle file uploads
       const formData = new FormData();
       
-      // Add text fields (removed backgroundColor)
-      formData.append('title', pageData.title || '');
-      formData.append('tone', pageData.tone || '');
-      formData.append('mainMessage', pageData.mainMessage || '');
-      formData.append('subMessage', pageData.subMessage || '');
-      formData.append('animationStyle', pageData.animationStyle || 'default');
-      formData.append('fontFamily', pageData.fontFamily || '');
-      formData.append('textColor', pageData.textColor || '#ffffff');
-      formData.append('textSize', pageData.textSize || 'text-base');
-      formData.append('autoplayMusic', pageData.autoplayMusic || false);
-      formData.append('slideshowAutoplay', pageData.slideshowAutoplay || false);
+      // Add all text fields from pageData
+      formData.append('title', pageData.title);
+      formData.append('tone', pageData.tone);
+      formData.append('mainMessage', pageData.mainMessage);
+      formData.append('subMessage', pageData.subMessage);
+      formData.append('animationStyle', pageData.animationStyle);
+      formData.append('backgroundColor', pageData.backgroundColor);
+      formData.append('fontFamily', pageData.fontFamily);
+      formData.append('textColor', pageData.textColor);
+      formData.append('textSize', pageData.textSize);
       
-      // Add music data
+      // Add music data if exists (as a JSON string)
       if (pageData.music) {
         formData.append('music', JSON.stringify(pageData.music));
       }
       
-      // Add images
+      // Add images if they exist
       if (pageData.images && pageData.images.length > 0) {
         pageData.images.forEach((image, index) => {
+          // If image is a File object, append it directly
           if (image instanceof File) {
             formData.append('images', image);
-          }
+          } 
+          // If image is a URL/path or object with URL, you might need to fetch it first
+          // This depends on how your page editor handles images
         });
       }
       
-      // Generate a local slug for fallback
-      const localSlug = generateSlug();
-      
-      // Try to make API call
-      let slug = localSlug;
-      try {
-        const response = await fetch('/api/pages/store', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: formData
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          slug = data.page.slug;
+      // Add background image if exists
+      if (pageData.backgroundImage) {
+        if (pageData.backgroundImage instanceof File) {
+          formData.append('backgroundImage', pageData.backgroundImage);
         }
-      } catch (apiError) {
-        console.log('API call failed, using local storage:', apiError.message);
       }
       
-      // Save locally regardless of API success
+      // Make the API call to store the page data
+      const response = await fetch('http://localhost:8080/api/pages/store', {
+        method: 'POST',
+        headers: {
+          // Don't set Content-Type header, it will be automatically set with boundary by browser
+          'Authorization': `Bearer ${token}` // Include the token in the Authorization header
+        },
+        body: formData
+      });
+      
+      if (!response.ok) {
+        // Try to get error details from the response
+        let errorDetails = '';
+        try {
+          const errorData = await response.json();
+          errorDetails = errorData.message || '';
+        } catch (e) {
+          // If we can't parse the error response, just use the status text
+          errorDetails = response.statusText;
+        }
+        
+        throw new Error(`Server responded with ${response.status}: ${errorDetails}`);
+      }
+      
+      // Parse the response
+      const data = await response.json();
+      
+      // Use the slug returned from the API
+      const slug = data.page.slug;
+      
+      // If your local state needs to be updated with the saved data
       await savePageData(slug, pageData);
       
       setPageSlug(slug);
       setIsPublished(true);
     } catch (error) {
       console.error('Error publishing page:', error);
-      alert(`Publication failed: ${error.message}`);
+      
+      // Show user-friendly error message
+      const errorMessage = error.message || 'Failed to publish page. Please try again.';
+      alert(`Publication failed: ${errorMessage}\n\nTip: Try using smaller image files (< 1MB) or remove background music.`);
     } finally {
       setIsPublishing(false);
     }
@@ -259,7 +271,7 @@ const PreviewPage = ({ pageData, onPrev }) => {
             transition={{ delay: 0.3 }}
             className="text-4xl font-bold text-gray-900 mb-4"
           >
-            Your Farewell Page is Live! 🎉
+            Your Exit Page is Live! 🎉
           </motion.h3>
           
           <motion.p
@@ -306,7 +318,7 @@ const PreviewPage = ({ pageData, onPrev }) => {
               onClick={() => window.open(getShareUrl(), '_blank')}
               className="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-lg font-bold hover:shadow-lg transition-all"
             >
-              <ExternalLink className="w-5 h-5" />
+              <LinkIcon className="w-5 h-5" />
               View Your Page
             </button>
             
@@ -413,22 +425,9 @@ const PreviewPage = ({ pageData, onPrev }) => {
             </div>
             
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <span className="text-sm text-gray-600">Text Color</span>
-              <div className="flex items-center gap-2">
-                <div 
-                  className="w-4 h-4 rounded border border-gray-300"
-                  style={{ backgroundColor: pageData.textColor || '#ffffff' }}
-                />
-                <span className="font-semibold text-xs">
-                  {pageData.textColor || 'Default'}
-                </span>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <span className="text-sm text-gray-600">Images</span>
+              <span className="text-sm text-gray-600">Background Image</span>
               <span className="font-semibold">
-                {pageData.images ? `${pageData.images.length} uploaded` : '✗ None'}
+                {pageData.backgroundImage ? '✓ Uploaded' : '✗ None'}
               </span>
             </div>
             
@@ -442,8 +441,8 @@ const PreviewPage = ({ pageData, onPrev }) => {
 
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
             <p className="text-sm text-blue-800">
-              <strong>Note:</strong> Background will automatically match your selected tone. 
-              Once published, your page will be publicly accessible via a unique link.
+              <strong>Note:</strong> Once published, your page will be publicly accessible 
+              via a unique link. You can always edit or delete it later.
             </p>
           </div>
         </div>
