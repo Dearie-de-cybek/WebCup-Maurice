@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Share2, Eye } from 'lucide-react';
-
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { getPageBySlug } from '../services/pages';
 
 import ToneBasedBackgroundEffects from './ToneBasedBackgroundEffects';
 import AudioPlayer from './AudioPlayer';
@@ -10,13 +11,16 @@ import GlassmorphicCard from './GlassmorphicCard';
 import VotingButton from './VotingButton';
 
 const PageViewer = ({ 
-  slug = 'demo-page', 
+  slug: propSlug = null, 
   previewData = null 
 }) => {
-  // Mock location for demo purposes
-  const location = {
-    search: previewData ? `?data=${encodeURIComponent(JSON.stringify(previewData))}` : ''
-  };
+  const params = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Get slug from URL params or props
+  const slug = propSlug || params.slug || 'demo-page';
+  
   const [pageData, setPageData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,34 +28,37 @@ const PageViewer = ({
   const [hasVoted, setHasVoted] = useState(false);
 
   useEffect(() => {
-    const loadPageData = () => {
+    const loadPageData = async () => {
       try {
-        // Check if this is a preview (data passed in URL)
+        // Check if this is a preview (data passed in URL or props)
         const searchParams = new URLSearchParams(location.search);
         const previewData = searchParams.get('data');
         
         if (previewData) {
+          console.log('Loading preview data from URL');
           const decoded = JSON.parse(decodeURIComponent(previewData));
           setPageData(decoded);
           setLoading(false);
           return;
         }
 
-        // Try sessionStorage first for full data
-        const sessionData = sessionStorage.getItem(`theend_page_${slug}`);
-        if (sessionData) {
-          const page = JSON.parse(sessionData);
-          setPageData(page);
-          setViews(page.views || 0);
+        // If previewData is passed as prop
+        if (previewData) {
+          console.log('Loading preview data from props');
+          setPageData(previewData);
           setLoading(false);
           return;
         }
 
-        // Fallback to localStorage
+        // Try to load from localStorage first
+        console.log('Loading page data for slug:', slug);
         const pages = JSON.parse(localStorage.getItem('theend_pages') || '{}');
-        const page = pages[slug];
+        console.log('Available pages:', Object.keys(pages));
+        
+        let page = pages[slug];
         
         if (page) {
+          console.log('Found page in localStorage:', page);
           setPageData(page);
           setViews(page.views || 0);
           
@@ -65,11 +72,21 @@ const PageViewer = ({
             console.log('Could not update view count:', error);
           }
         } else {
-          setError('Page not found');
+          // Try sessionStorage as fallback
+          const sessionData = sessionStorage.getItem(`theend_page_${slug}`);
+          if (sessionData) {
+            console.log('Found page in sessionStorage');
+            const sessionPage = JSON.parse(sessionData);
+            setPageData(sessionPage);
+            setViews(sessionPage.views || 0);
+          } else {
+            console.log('Page not found in localStorage or sessionStorage');
+            setError('Page not found. This page may not exist or may have been removed.');
+          }
         }
       } catch (err) {
-        setError('Error loading page');
-        console.error(err);
+        console.error('Error loading page:', err);
+        setError('Error loading page. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -80,26 +97,43 @@ const PageViewer = ({
     setHasVoted(votedPages.includes(slug));
 
     loadPageData();
-  }, [slug, location.search]);
+  }, [slug, location.search, previewData]);
 
   const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/page/${slug}`;
+    
     if (navigator.share) {
       try {
         await navigator.share({
           title: pageData.title,
           text: `Check out this farewell page: ${pageData.title}`,
-          url: window.location.href
+          url: shareUrl
         });
       } catch (err) {
         console.log('Error sharing:', err);
+        // Fallback to clipboard
+        copyToClipboard(shareUrl);
       }
     } else {
-      try {
-        await navigator.clipboard.writeText(window.location.href);
-        alert('Link copied to clipboard!');
-      } catch (err) {
-        console.log('Error copying to clipboard:', err);
-      }
+      copyToClipboard(shareUrl);
+    }
+  };
+
+  const copyToClipboard = async (url) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      // You might want to show a toast notification here
+      alert('Link copied to clipboard!');
+    } catch (err) {
+      console.log('Error copying to clipboard:', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = url;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('Link copied to clipboard!');
     }
   };
 
@@ -110,10 +144,28 @@ const PageViewer = ({
       if (pages[pageSlug]) {
         pages[pageSlug].votes = (pages[pageSlug].votes || 0) + 1;
         localStorage.setItem('theend_pages', JSON.stringify(pages));
+        
+        // Update local state
+        setPageData(prev => ({
+          ...prev,
+          votes: (prev.votes || 0) + 1
+        }));
+      }
+      
+      // Mark as voted
+      const votedPages = JSON.parse(localStorage.getItem('voted_pages') || '[]');
+      if (!votedPages.includes(pageSlug)) {
+        votedPages.push(pageSlug);
+        localStorage.setItem('voted_pages', JSON.stringify(votedPages));
+        setHasVoted(true);
       }
     } catch (error) {
       console.error('Failed to update vote count:', error);
     }
+  };
+
+  const handleBackToHome = () => {
+    navigate('/');
   };
 
   if (loading) {
@@ -155,7 +207,7 @@ const PageViewer = ({
           <h1 className="text-8xl font-bold text-white mb-4">404</h1>
           <p className="text-gray-400 text-xl mb-8">{error}</p>
           <motion.button 
-            onClick={() => window.location.href = '/'}
+            onClick={handleBackToHome}
             className="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold hover:from-purple-600 hover:to-pink-600 transition-all duration-300"
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95 }}
@@ -213,7 +265,7 @@ const PageViewer = ({
         transition={{ duration: 0.8 }}
       >
         <motion.button 
-          onClick={() => window.location.href = '/'}
+          onClick={handleBackToHome}
           className="flex items-center gap-2 px-4 py-2 bg-black/30 backdrop-blur-md rounded-xl text-sm font-medium border border-white/10 hover:bg-black/50 transition-all duration-300"
           whileHover={{ scale: 1.05, x: -5 }}
           whileTap={{ scale: 0.95 }}
