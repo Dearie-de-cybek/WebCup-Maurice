@@ -1,18 +1,27 @@
-/* eslint-disable no-unused-vars */
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useParams, useLocation } from 'react-router-dom';
-import { Eye, Share2, Heart, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Share2, Eye } from 'lucide-react';
 
-const PageViewer = () => {
-  const { slug } = useParams();
-  const location = useLocation();
+
+import ToneBasedBackgroundEffects from './ToneBasedBackgroundEffects';
+import AudioPlayer from './AudioPlayer';
+import ImageCarousel from './ImageCarousel';
+import GlassmorphicCard from './GlassmorphicCard';
+import VotingButton from './VotingButton';
+
+const PageViewer = ({ 
+  slug = 'demo-page', 
+  previewData = null 
+}) => {
+  // Mock location for demo purposes
+  const location = {
+    search: previewData ? `?data=${encodeURIComponent(JSON.stringify(previewData))}` : ''
+  };
   const [pageData, setPageData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [views, setViews] = useState(0);
-  const [liked, setLiked] = useState(false);
-  const audioRef = useRef(null);
+  const [hasVoted, setHasVoted] = useState(false);
 
   useEffect(() => {
     const loadPageData = () => {
@@ -22,12 +31,13 @@ const PageViewer = () => {
         const previewData = searchParams.get('data');
         
         if (previewData) {
-          setPageData(JSON.parse(decodeURIComponent(previewData)));
+          const decoded = JSON.parse(decodeURIComponent(previewData));
+          setPageData(decoded);
           setLoading(false);
           return;
         }
 
-        // First try to get full data from sessionStorage (current session)
+        // Try sessionStorage first for full data
         const sessionData = sessionStorage.getItem(`theend_page_${slug}`);
         if (sessionData) {
           const page = JSON.parse(sessionData);
@@ -37,27 +47,12 @@ const PageViewer = () => {
           return;
         }
 
-        // Fall back to localStorage Mike and Uche
+        // Fallback to localStorage
         const pages = JSON.parse(localStorage.getItem('theend_pages') || '{}');
         const page = pages[slug];
         
         if (page) {
-          // Create a display-friendly version with placeholder content for missing media
-          const displayData = {
-            ...page,
-            backgroundImage: page.backgroundImage?.hasImage ? {
-              ...page.backgroundImage,
-              url: '/api/placeholder/1920/1080', // Placeholder image
-              placeholder: true
-            } : null,
-            music: page.music?.hasAudio ? {
-              ...page.music,
-              url: null, // Can't play audio from storage
-              disabled: true
-            } : page.music // Keep presets as they don't need actual files
-          };
-          
-          setPageData(displayData);
+          setPageData(page);
           setViews(page.views || 0);
           
           // Increment view count
@@ -80,140 +75,25 @@ const PageViewer = () => {
       }
     };
 
+    // Check if user has already voted for this page
+    const votedPages = JSON.parse(localStorage.getItem('voted_pages') || '[]');
+    setHasVoted(votedPages.includes(slug));
+
     loadPageData();
   }, [slug, location.search]);
-
-  useEffect(() => {
-    // Auto-play music if enabled
-    if (pageData?.autoplayMusic && pageData?.music && audioRef.current) {
-      audioRef.current.play().catch(() => {
-        // Auto-play blocked by browser, that's okay
-      });
-    }
-  }, [pageData]);
-
-  const getToneStyles = (tone) => {
-    const toneStyles = {
-      dramatic: {
-        background: 'linear-gradient(135deg, #1f1f1f 0%, #8b0000 100%)',
-        textColor: '#ffffff',
-        fontFamily: "'Playfair Display', serif",
-        accent: '#ff4444',
-        overlay: 'rgba(0,0,0,0.7)'
-      },
-      ironic: {
-        background: 'linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%)',
-        textColor: '#2c3e50',
-        fontFamily: "'Comic Sans MS', cursive",
-        accent: '#f39c12',
-        overlay: 'rgba(255,255,255,0.1)'
-      },
-      cringe: {
-        background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)',
-        textColor: '#ffffff',
-        fontFamily: "'Papyrus', fantasy",
-        accent: '#e74c3c',
-        overlay: 'rgba(255,255,255,0.1)'
-      },
-      classy: {
-        background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
-        textColor: '#ecf0f1',
-        fontFamily: "'Georgia', serif",
-        accent: '#3498db',
-        overlay: 'rgba(0,0,0,0.3)'
-      },
-      touching: {
-        background: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
-        textColor: '#8b4513',
-        fontFamily: "'Dancing Script', cursive",
-        accent: '#e74c3c',
-        overlay: 'rgba(255,255,255,0.2)'
-      },
-      absurd: {
-        background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-        textColor: '#2c3e50',
-        fontFamily: "'Courier New', monospace",
-        accent: '#9b59b6',
-        overlay: 'rgba(255,255,255,0.1)'
-      },
-      'passive-aggressive': {
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        textColor: '#ffffff',
-        fontFamily: "'Arial', sans-serif",
-        accent: '#f39c12',
-        overlay: 'rgba(0,0,0,0.2)'
-      },
-      honest: {
-        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-        textColor: '#2c3e50',
-        fontFamily: "'Helvetica', sans-serif",
-        accent: '#27ae60',
-        overlay: 'rgba(255,255,255,0.1)'
-      }
-    };
-    
-    return toneStyles[tone] || toneStyles.honest;
-  };
-
-  const getAnimationVariants = (style) => {
-    const animations = {
-      dramatic: {
-        initial: { opacity: 0, scale: 0.8 },
-        animate: { 
-          opacity: 1, 
-          scale: 1, 
-          transition: { duration: 1.5, ease: "easeOut" }
-        }
-      },
-      subtle: {
-        initial: { opacity: 0 },
-        animate: { 
-          opacity: 1, 
-          transition: { duration: 3 }
-        }
-      },
-      bounce: {
-        initial: { opacity: 0, y: -100 },
-        animate: { 
-          opacity: 1, 
-          y: 0, 
-          transition: { type: "spring", bounce: 0.5, duration: 1.2 }
-        }
-      },
-      slide: {
-        initial: { opacity: 0, x: -100 },
-        animate: { 
-          opacity: 1, 
-          x: 0, 
-          transition: { duration: 1 }
-        }
-      },
-      default: {
-        initial: { opacity: 0, y: 30 },
-        animate: { 
-          opacity: 1, 
-          y: 0, 
-          transition: { duration: 0.8 }
-        }
-      }
-    };
-    
-    return animations[style] || animations.default;
-  };
 
   const handleShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
           title: pageData.title,
-          text: `Check out this goodbye page: ${pageData.title}`,
+          text: `Check out this farewell page: ${pageData.title}`,
           url: window.location.href
         });
       } catch (err) {
         console.log('Error sharing:', err);
       }
     } else {
-      // Fallback to copying to clipboard
       try {
         await navigator.clipboard.writeText(window.location.href);
         alert('Link copied to clipboard!');
@@ -223,289 +103,299 @@ const PageViewer = () => {
     }
   };
 
-  const handleLike = () => {
-    setLiked(!liked);
-    // In production, this would update the like count in the database
+  const handleVote = async (pageSlug) => {
+    // Update page votes in localStorage
+    try {
+      const pages = JSON.parse(localStorage.getItem('theend_pages') || '{}');
+      if (pages[pageSlug]) {
+        pages[pageSlug].votes = (pages[pageSlug].votes || 0) + 1;
+        localStorage.setItem('theend_pages', JSON.stringify(pages));
+      }
+    } catch (error) {
+      console.error('Failed to update vote count:', error);
+    }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-center">
-          <div className="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading the page...</p>
-        </div>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <motion.div
+          className="text-center"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="relative w-20 h-20 mx-auto mb-6">
+            <motion.div
+              className="absolute inset-0 border-4 border-purple-500 border-t-transparent rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+            <motion.div
+              className="absolute inset-2 border-4 border-blue-500 border-b-transparent rounded-full"
+              animate={{ rotate: -360 }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+            />
+          </div>
+          <p className="text-white text-xl">Loading the experience...</p>
+        </motion.div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-center max-w-md mx-auto p-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-4">404</h1>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <button 
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <motion.div
+          className="text-center max-w-md mx-auto p-8"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <h1 className="text-8xl font-bold text-white mb-4">404</h1>
+          <p className="text-gray-400 text-xl mb-8">{error}</p>
+          <motion.button 
             onClick={() => window.location.href = '/'}
-            className="px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+            className="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold hover:from-purple-600 hover:to-pink-600 transition-all duration-300"
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <ArrowLeft className="w-4 h-4 inline mr-2" />
-            Go Home
-          </button>
-        </div>
+            <ArrowLeft className="w-5 h-5 inline mr-2" />
+            Return Home
+          </motion.button>
+        </motion.div>
       </div>
     );
   }
 
-  const styles = getToneStyles(pageData.tone);
-  const animation = getAnimationVariants(pageData.animationStyle);
-  const finalTextColor = pageData.textColor || styles.textColor;
-
-  const pageStyle = {
-    background: pageData.backgroundImage 
-      ? `url(${pageData.backgroundImage.url})`
-      : styles.background,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundAttachment: 'fixed',
-    color: finalTextColor,
-    fontFamily: styles.fontFamily,
-    minHeight: '100vh'
+  // Get tone-specific text color
+  const getToneTextColor = (tone) => {
+    const colors = {
+      dramatic: '#ffffff',
+      ironic: '#1f2937',
+      cringe: '#ffffff',
+      classy: '#f3f4f6',
+      touching: '#8b4513',
+      absurd: '#1f2937',
+      'passive-aggressive': '#ffffff',
+      honest: '#1f2937'
+    };
+    return colors[tone] || '#ffffff';
   };
 
+  const textColor = pageData.textColor || getToneTextColor(pageData.tone);
+
   return (
-    <>
-      {/* Meta tags for social sharing */}
-      <title>{pageData.title} - TheEnd.page</title>
-      
-      <div style={pageStyle} className="relative">
-        {/* Background overlay */}
-        {pageData.backgroundImage && (
-          <div 
-            className="absolute inset-0"
-            style={{ background: styles.overlay }}
-          />
-        )}
+    <div className="min-h-screen relative overflow-hidden" style={{ color: textColor }}>
+      {/* Tone-based background effects */}
+      <ToneBasedBackgroundEffects tone={pageData.tone} />
 
-        {/* Navigation Bar */}
-        <nav className="relative z-10 p-6 flex justify-between items-center bg-black bg-opacity-20">
-          <button 
-            onClick={() => window.location.href = '/'}
-            className="text-sm opacity-70 hover:opacity-100 transition-opacity flex items-center gap-2"
-            style={{ color: finalTextColor }}
+      {/* Background image overlay */}
+      {pageData.backgroundImage && (
+        <div 
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url(${pageData.backgroundImage.url})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed'
+          }}
+        >
+          <div className="absolute inset-0 bg-black/40" />
+        </div>
+      )}
+
+      {/* Navigation Bar */}
+      <motion.nav
+        className="relative z-40 p-6 flex justify-between items-center"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+      >
+        <motion.button 
+          onClick={() => window.location.href = '/'}
+          className="flex items-center gap-2 px-4 py-2 bg-black/30 backdrop-blur-md rounded-xl text-sm font-medium border border-white/10 hover:bg-black/50 transition-all duration-300"
+          whileHover={{ scale: 1.05, x: -5 }}
+          whileTap={{ scale: 0.95 }}
+          style={{ color: textColor }}
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to TheEnd.page
+        </motion.button>
+        
+        <div className="flex items-center gap-4">
+          <motion.button
+            onClick={handleShare}
+            className="p-3 bg-black/30 backdrop-blur-md rounded-xl border border-white/10 hover:bg-black/50 transition-all duration-300"
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            whileTap={{ scale: 0.9 }}
+            title="Share this page"
           >
-            <ArrowLeft className="w-4 h-4" />
-            Back to TheEnd.page
-          </button>
+            <Share2 className="w-5 h-5" style={{ color: textColor }} />
+          </motion.button>
           
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleShare}
-              className="p-2 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition-all"
-              title="Share this page"
-            >
-              <Share2 className="w-5 h-5" style={{ color: finalTextColor }} />
-            </button>
-            
-            <button
-              onClick={handleLike}
-              className={`p-2 rounded-full transition-all ${
-                liked 
-                  ? 'bg-red-500 bg-opacity-80' 
-                  : 'bg-white bg-opacity-20 hover:bg-opacity-30'
-              }`}
-              title={liked ? 'Unlike' : 'Like this page'}
-            >
-              <Heart 
-                className={`w-5 h-5 ${liked ? 'fill-current text-white' : ''}`}
-                style={{ color: liked ? 'white' : finalTextColor }} 
-              />
-            </button>
-            
-            <div className="flex items-center gap-1 text-sm opacity-70" style={{ color: finalTextColor }}>
-              <Eye className="w-4 h-4" />
-              <span>{views}</span>
-            </div>
-          </div>
-        </nav>
-
-        {/* Main Content */}
-        <div className="relative z-10 flex items-center justify-center min-h-screen p-6">
           <motion.div
-            className="text-center max-w-4xl mx-auto"
-            initial={animation.initial}
-            animate={animation.animate}
+            className="flex items-center gap-2 px-4 py-2 bg-black/30 backdrop-blur-md rounded-xl border border-white/10"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.5, type: "spring" }}
           >
-            {/* Special effects based on tone */}
-            <AnimatePresence>
-              {pageData.tone === 'cringe' && (
-                <>
-                  {[...Array(8)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      className="absolute text-4xl pointer-events-none"
-                      style={{
-                        left: `${Math.random() * 100}%`,
-                        top: `${Math.random() * 100}%`,
-                      }}
-                      initial={{ opacity: 0, scale: 0 }}
-                      animate={{ 
-                        opacity: [0, 1, 0],
-                        scale: [0, 1.5, 0],
-                        rotate: [0, 360]
-                      }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        delay: i * 0.5,
-                        repeatDelay: 2
-                      }}
-                    >
-                      ✨
-                    </motion.div>
-                  ))}
-                </>
-              )}
-
-              {pageData.tone === 'dramatic' && (
-                <motion.div
-                  className="absolute inset-0 pointer-events-none"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: [0, 0.1, 0] }}
-                  transition={{ duration: 5, repeat: Infinity }}
-                  style={{
-                    background: 'radial-gradient(circle, rgba(255,0,0,0.3) 0%, transparent 70%)'
-                  }}
-                />
-              )}
-
-              {pageData.tone === 'touching' && (
-                <>
-                  {[...Array(5)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      className="absolute text-3xl pointer-events-none"
-                      style={{
-                        left: `${20 + i * 15}%`,
-                        top: `${30 + (i % 2) * 40}%`,
-                      }}
-                      animate={{
-                        y: [0, -20, 0],
-                        opacity: [0.3, 0.8, 0.3],
-                      }}
-                      transition={{
-                        duration: 4,
-                        repeat: Infinity,
-                        delay: i * 0.8,
-                      }}
-                    >
-                      💝
-                    </motion.div>
-                  ))}
-                </>
-              )}
-
-              {pageData.tone === 'absurd' && (
-                <motion.div
-                  className="absolute top-10 right-10 text-8xl pointer-events-none"
-                  animate={{ 
-                    rotate: [0, 360],
-                    scale: [1, 1.2, 1]
-                  }}
-                  transition={{ 
-                    duration: 10, 
-                    repeat: Infinity
-                  }}
-                >
-                  🦄
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Title */}
-            <motion.h1 
-              className="text-4xl md:text-6xl lg:text-7xl font-bold mb-8"
-              style={{ color: finalTextColor }}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 1 }}
-            >
-              {pageData.title}
-            </motion.h1>
-            
-            {/* Main Message */}
-            <motion.div 
-              className="text-lg md:text-xl lg:text-2xl leading-relaxed mb-8 max-w-3xl mx-auto"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1, duration: 1 }}
-            >
-              <p className="whitespace-pre-wrap">
-                {pageData.mainMessage}
-              </p>
-            </motion.div>
-            
-            {/* Subtitle */}
-            {pageData.subMessage && (
-              <motion.p 
-                className="text-sm md:text-base opacity-80 italic"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.5, duration: 1 }}
-              >
-                {pageData.subMessage}
-              </motion.p>
-            )}
-
-            {/* Signature/Footer */}
-            <motion.div
-              className="mt-16 pt-8 border-t border-current border-opacity-30"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 2, duration: 1 }}
-            >
-              <p className="text-xs opacity-60">
-                Created on {pageData.createdAt ? new Date(pageData.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}
-              </p>
-              <p className="text-xs opacity-40 mt-2">
-                Made with TheEnd.page
-              </p>
-            </motion.div>
+            <Eye className="w-4 h-4" style={{ color: textColor }} />
+            <span className="text-sm font-medium" style={{ color: textColor }}>
+              {views.toLocaleString()}
+            </span>
           </motion.div>
         </div>
+      </motion.nav>
 
-        {/* Background Music */}
-        {pageData.music && (
-          <audio
-            ref={audioRef}
-            loop
-            style={{ display: 'none' }}
-            src={pageData.music.url || undefined}
-          />
-        )}
+      {/* Main Content */}
+      <div className="relative z-30 min-h-screen flex items-center justify-center p-6">
+        <div className="w-full max-w-6xl mx-auto">
+          {/* Main message in glassmorphic card */}
+          <motion.div
+            className="mb-12"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, delay: 0.3 }}
+          >
+            <GlassmorphicCard
+              title={pageData.title}
+              mainMessage={pageData.mainMessage}
+              subMessage={pageData.subMessage}
+              tone={pageData.tone}
+              className="mb-8"
+            />
+          </motion.div>
 
-        {/* Music Control */}
-        {pageData.music && (
-          <div className="fixed bottom-6 right-6 z-20">
-            <button
-              onClick={() => {
-                if (audioRef.current) {
-                  if (audioRef.current.paused) {
-                    audioRef.current.play();
-                  } else {
-                    audioRef.current.pause();
-                  }
-                }
-              }}
-              className="p-3 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70 transition-all"
-              title="Toggle music"
+          {/* Image carousel */}
+          {pageData.images && pageData.images.length > 0 && (
+            <motion.div
+              className="mb-12 max-w-4xl mx-auto"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
             >
-              🎵
-            </button>
-          </div>
-        )}
+              <ImageCarousel 
+                images={pageData.images} 
+                autoplay={pageData.slideshowAutoplay}
+              />
+            </motion.div>
+          )}
+
+          {/* Audio player */}
+          {pageData.music && (
+            <motion.div
+              className="mb-12 max-w-2xl mx-auto"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+            >
+              <AudioPlayer 
+                audioSrc={pageData.music.url} 
+                autoplay={pageData.autoplayMusic}
+              />
+            </motion.div>
+          )}
+
+          {/* Voting button */}
+          <motion.div
+            className="mb-12"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1 }}
+          >
+            <VotingButton
+              pageSlug={slug}
+              initialVotes={pageData.votes || 0}
+              hasVoted={hasVoted}
+              onVote={handleVote}
+            />
+          </motion.div>
+
+          {/* Footer */}
+          <motion.div
+            className="text-center mt-16 pt-8 border-t border-white/10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2, duration: 1 }}
+          >
+            <p className="text-sm opacity-60" style={{ color: textColor }}>
+              Created on {pageData.createdAt ? new Date(pageData.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}
+            </p>
+            <p className="text-xs opacity-40 mt-2" style={{ color: textColor }}>
+              Made with ❤️ on TheEnd.page
+            </p>
+          </motion.div>
+        </div>
       </div>
-    </>
+
+      {/* Special effects for specific tones */}
+      <AnimatePresence>
+        {pageData.tone === 'cringe' && (
+          <motion.div
+            className="fixed inset-0 pointer-events-none z-10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {[...Array(8)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute text-4xl"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                }}
+                animate={{
+                  rotate: [0, 360],
+                  scale: [0, 1, 0],
+                  opacity: [0, 1, 0]
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  delay: i * 0.5,
+                  repeatDelay: 2
+                }}
+              >
+                ✨
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+
+        {pageData.tone === 'touching' && (
+          <motion.div
+            className="fixed inset-0 pointer-events-none z-10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {[...Array(5)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute text-3xl"
+                style={{
+                  left: `${20 + i * 15}%`,
+                  top: `${30 + (i % 2) * 40}%`,
+                }}
+                animate={{
+                  y: [0, -20, 0],
+                  opacity: [0.3, 0.8, 0.3],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  delay: i * 0.8,
+                }}
+              >
+                💝
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 
