@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { ArrowRight, Sparkles, Heart, Zap, User, LogOut, Code, Palette, Share } from 'lucide-react';
@@ -12,7 +14,7 @@ const CustomCursor = () => {
     const updateMousePos = (e) => {
       setMousePos({ x: e.clientX, y: e.clientY });
     };
-
+    
     const handleMouseEnter = () => setIsHovered(true);
     const handleMouseLeave = () => setIsHovered(false);
 
