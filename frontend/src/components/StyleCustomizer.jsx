@@ -1,7 +1,6 @@
-/* eslint-disable no-unused-vars */
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Upload, Music, X, Image as ImageIcon, Palette, Type, Plus } from 'lucide-react';
+import { ArrowRight, Upload, Music, X, Image, Type, Plus } from 'lucide-react';
 import LivePreview from './shared/LivePreview';
 
 const StyleCustomizer = ({ pageData, setPageData, onNext, onPrev }) => {
@@ -10,18 +9,20 @@ const StyleCustomizer = ({ pageData, setPageData, onNext, onPrev }) => {
   const fileInputRef = useRef(null);
   const musicInputRef = useRef(null);
 
-  // Curated background colors that work well with various text colors
-  const backgroundColors = [
-    { name: 'Midnight Black', value: '#0f0f0f', textColors: ['#ffffff', '#f3f4f6', '#fbbf24', '#f87171'] },
-    { name: 'Deep Purple', value: '#581c87', textColors: ['#ffffff', '#fbbf24', '#f87171', '#34d399'] },
-    { name: 'Navy Blue', value: '#1e3a8a', textColors: ['#ffffff', '#fbbf24', '#34d399', '#f87171'] },
-    { name: 'Forest Green', value: '#166534', textColors: ['#ffffff', '#fbbf24', '#f87171', '#60a5fa'] },
-    { name: 'Deep Red', value: '#7f1d1d', textColors: ['#ffffff', '#fbbf24', '#f3f4f6', '#34d399'] },
-    { name: 'Charcoal', value: '#374151', textColors: ['#ffffff', '#fbbf24', '#f87171', '#34d399'] },
-    { name: 'Pure White', value: '#ffffff', textColors: ['#1f2937', '#7f1d1d', '#1e3a8a', '#166534'] },
-    { name: 'Soft Gray', value: '#f3f4f6', textColors: ['#1f2937', '#7f1d1d', '#1e3a8a', '#166534'] },
-    { name: 'Warm Cream', value: '#fefce8', textColors: ['#1f2937', '#7f1d1d', '#1e3a8a', '#166534'] },
-    { name: 'Rose Gold', value: '#fdf2f8', textColors: ['#7f1d1d', '#581c87', '#166534', '#1e3a8a'] }
+  // Text color options 
+  const textColorOptions = [
+    { name: 'Pure White', value: '#ffffff' },
+    { name: 'Soft Gray', value: '#f3f4f6' },
+    { name: 'Light Gray', value: '#d1d5db' },
+    { name: 'Dark Gray', value: '#6b7280' },
+    { name: 'Charcoal', value: '#374151' },
+    { name: 'Deep Black', value: '#1f2937' },
+    { name: 'Warm Gold', value: '#fbbf24' },
+    { name: 'Soft Blue', value: '#60a5fa' },
+    { name: 'Gentle Green', value: '#34d399' },
+    { name: 'Coral Red', value: '#f87171' },
+    { name: 'Lavender', value: '#a78bfa' },
+    { name: 'Rose Pink', value: '#fb7185' }
   ];
 
   // Font options
@@ -171,48 +172,11 @@ const StyleCustomizer = ({ pageData, setPageData, onNext, onPrev }) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const selectedBgColor = backgroundColors.find(color => color.value === pageData.backgroundColor) || backgroundColors[0];
-
   return (
     <div className="max-w-6xl mx-auto">
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Customization Panel */}
         <div className="space-y-6">
-          {/* Background Color Selector */}
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <Palette className="w-6 h-6" />
-              Background Color
-            </h3>
-            
-            <div className="grid grid-cols-2 gap-3">
-              {backgroundColors.map((color) => (
-                <button
-                  key={color.value}
-                  onClick={() => setPageData({ 
-                    ...pageData, 
-                    backgroundColor: color.value,
-                    // Auto-select first compatible text color if current doesn't work
-                    textColor: color.textColors.includes(pageData.textColor) 
-                      ? pageData.textColor 
-                      : color.textColors[0]
-                  })}
-                  className={`p-3 rounded-lg border-2 transition-all ${
-                    pageData.backgroundColor === color.value
-                      ? 'border-purple-500 ring-2 ring-purple-200'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div 
-                    className="w-full h-12 rounded-md mb-2"
-                    style={{ backgroundColor: color.value }}
-                  />
-                  <p className="text-sm font-medium text-gray-700">{color.name}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Text Styling Options */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
@@ -226,29 +190,33 @@ const StyleCustomizer = ({ pageData, setPageData, onNext, onPrev }) => {
                 <label className="block text-sm font-medium text-gray-700 mb-3">
                   Text Color
                 </label>
-                <div className="grid grid-cols-4 gap-3">
-                  {selectedBgColor.textColors.map((color) => (
+                <div className="grid grid-cols-3 gap-3">
+                  {textColorOptions.map((color) => (
                     <button
-                      key={color}
-                      onClick={() => setPageData({ ...pageData, textColor: color })}
+                      key={color.value}
+                      onClick={() => setPageData({ ...pageData, textColor: color.value })}
                       className={`p-3 rounded-lg border-2 transition-all ${
-                        pageData.textColor === color
+                        pageData.textColor === color.value
                           ? 'border-purple-500 ring-2 ring-purple-200'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
                       <div 
-                        className="w-full h-8 rounded-md flex items-center justify-center text-sm font-medium"
+                        className="w-full h-8 rounded-md flex items-center justify-center text-sm font-medium border border-gray-100"
                         style={{ 
-                          backgroundColor: color,
-                          color: color === '#ffffff' || color.includes('f') ? '#000000' : '#ffffff'
+                          backgroundColor: color.value === '#ffffff' ? '#f3f4f6' : color.value,
+                          color: color.value === '#ffffff' || color.value.includes('f') ? '#000000' : '#ffffff'
                         }}
                       >
                         Aa
                       </div>
+                      <p className="text-xs font-medium text-gray-600 mt-2">{color.name}</p>
                     </button>
                   ))}
                 </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Background will automatically match your selected tone
+                </p>
               </div>
 
               {/* Font Family */}
@@ -297,7 +265,7 @@ const StyleCustomizer = ({ pageData, setPageData, onNext, onPrev }) => {
           {/* Images Upload (Slideshow) */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <ImageIcon className="w-6 h-6" />
+              <Image className="w-6 h-6" />
               Images for Slideshow (Max 8)
             </h3>
             
@@ -382,7 +350,7 @@ const StyleCustomizer = ({ pageData, setPageData, onNext, onPrev }) => {
                   <div>
                     <p className="font-medium">{pageData.music.name}</p>
                     <p className="text-sm text-gray-600">
-                      {formatFileSize(pageData.music.size)}
+                      {pageData.music.size ? formatFileSize(pageData.music.size) : 'Preset'}
                     </p>
                   </div>
                   <button
@@ -392,13 +360,15 @@ const StyleCustomizer = ({ pageData, setPageData, onNext, onPrev }) => {
                     <X className="w-5 h-5" />
                   </button>
                 </div>
-                <audio 
-                  controls 
-                  src={pageData.music.url}
-                  className="w-full"
-                >
-                  Your browser does not support the audio element.
-                </audio>
+                {pageData.music.url && (
+                  <audio 
+                    controls 
+                    src={pageData.music.url}
+                    className="w-full"
+                  >
+                    Your browser does not support the audio element.
+                  </audio>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
