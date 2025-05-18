@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { LogOut, Plus } from "lucide-react";
@@ -9,29 +8,42 @@ import MusicControl from "../components/MusicControl";
 import HeroSection from "../components/HeroSection";
 import StatsCards from "../components/StatsCards";
 import PagesSection from "../components/PagesSection";
-import { getUserPages } from "../client";
 
-const Dashboard = ({ user, token, onSignOut, onClose }) => {
-  const [userPages, setUserPages] = useState([]);
+const Dashboard = ({
+  user = { name: "Creative Soul", joinedAt: "2024-01-01" },
+  onSignOut = () => {},
+}) => {
+  const [userPages, setUserPages] = useState([
+    {
+      slug: "dramatic-exit",
+      title: "My Dramatic Exit",
+      tone: "dramatic",
+      createdAt: "2024-05-15",
+      views: 1247,
+    },
+    {
+      slug: "ironic-goodbye",
+      title: "Ironic Farewell",
+      tone: "ironic",
+      createdAt: "2024-05-10",
+      views: 856,
+    },
+    {
+      slug: "touching-message",
+      title: "A Touch of Goodbye",
+      tone: "touching",
+      createdAt: "2024-05-08",
+      views: 2103,
+    },
+  ]);
   const [totalViews, setTotalViews] = useState(4206);
   const [loading, setLoading] = useState(true);
 
+  // Simulated loading
   useEffect(() => {
-    const fetchPages = async () => {
-      try {
-        const data = await getUserPages(token);
-        setUserPages(data.pages);
-        const total = data.pages.reduce((acc, page) => acc + page.views, 0);
-        setTotalViews(total);
-      } catch (err) {
-        console.error("Failed to load user pages:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPages();
-  }, [token]);
+    const timer = setTimeout(() => setLoading(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {

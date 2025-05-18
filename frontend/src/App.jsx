@@ -19,6 +19,7 @@ function App() {
       <Route path="/view/:slug" element={<PageViewer />} />
       <Route path="/view/preview" element={<PageViewer />} />
       <Route path="/halloffame" element={<HallOfFame />} />
+      <Route path="/page/:slug" element={<PageViewer />} />
     </Routes>
   );
 }
