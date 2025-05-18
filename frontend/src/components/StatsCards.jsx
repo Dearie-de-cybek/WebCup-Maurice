@@ -2,7 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, Eye, Calendar, Heart } from 'lucide-react';
-import { getUserPages } from "../services/pages";
+import { getUserPages, getAllVotes } from "../services/pages";
 import { useEffect, useState } from 'react';
 
 const StatsCards = ({ userPages, totalViews, user, formatDate, onVote }) => {
@@ -25,6 +25,23 @@ const StatsCards = ({ userPages, totalViews, user, formatDate, onVote }) => {
     fetchUserPages();
   }, []);
 
+  const [votes, setVotes] = useState([]);
+
+  useEffect(() => {
+    const fetchAllVotes = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const fetchedVotes = await getAllVotes(token);
+        setVotes(fetchedVotes);
+        console.log("Fetched votes:", fetchedVotes);
+      } catch (error) {
+        console.error("Error fetching votes:", error);
+      }
+    };
+
+    fetchAllVotes();
+  }, []);
+
   const stats = [
     { 
       label: "Farewell Pages", 
@@ -40,7 +57,7 @@ const StatsCards = ({ userPages, totalViews, user, formatDate, onVote }) => {
     // },
     { 
       label: "Total Votes", 
-      value: totalVotes.toLocaleString(), 
+      value: votes.votedPages?.length || 0, 
       icon: <Heart className="w-8 h-8" />, 
       color: "from-red-500 to-orange-500" 
     },

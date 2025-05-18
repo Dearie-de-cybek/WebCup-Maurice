@@ -128,3 +128,19 @@ export const removeVoteFromPage = async (pageId: string, token: string) => {
         throw error;
     }
 };
+
+// Get all votes for a page
+export const getAllVotes = async (token: string) => {
+    try {
+        const response = await axios.get(`${API_URL}/votes/user`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error getting votes for page:', error);
+        throw error;
+    }
+};

@@ -84,6 +84,14 @@ class PageRoute {
         this.pageController.removeVoteFromPage.bind(this.pageController)
       )
     );
+
+    // Get all votes
+    this.router.get(
+      `${this.path}/votes/user`,
+      isAuthenticated,
+      useCatchErrors(this.pageController.getUserVotes.bind(this.pageController))
+    );
+    
   }
 }
 

@@ -372,6 +372,22 @@ class PageController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  async getUserVotes(req, res) {
+    try {
+      const user_uuid = req.user.uuid;
+  
+      const votedPages = await Page.find({ votes: user_uuid }).select("-__v -updatedAt");
+  
+      res.status(200).json({
+        message: "Voted pages retrieved successfully",
+        votedPages,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+  
 }
 
 module.exports = PageController;
