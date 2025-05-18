@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:8080/api",
+  baseURL: "https://digitalnomads.maurice.webcup.hodi.host",
+  // baseURL: "http://localhost:8080/api",
 });
 
 // Login

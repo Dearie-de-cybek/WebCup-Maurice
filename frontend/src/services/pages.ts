@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/pages';
+// const API_URL = 'http://localhost:8080/api/pages';
+const API_URL = 'https://digitalnomads.maurice.webcup.hodi.host/api/pages';
 
 // Store a page
 export const storePage = async (data: any, token: string) => {
