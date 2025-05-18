@@ -2,40 +2,63 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, Heart } from 'lucide-react';
+import { addVoteToPage } from '../services/pages';
 
-const VotingButton = ({ pageSlug, initialVotes = 0, hasVoted = false, onVote }) => {
+const VotingButton = ({ pageId, pageSlug, initialVotes = 0, hasVoted = false, onVote }) => {
   const [votes, setVotes] = useState(initialVotes);
   const [voted, setVoted] = useState(hasVoted);
   const [isVoting, setIsVoting] = useState(false);
 
   const handleVote = async () => {
-    if (voted || isVoting) return;
-
+    if (voted || isVoting || !pageId) return;
+    
     setIsVoting(true);
     
     try {
-      // Optimistic update
-      setVotes(prev => prev + 1);
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      
+      if (!token) {
+        alert('You need to be logged in to vote');
+        return;
+      }
+
+      // Call the API to add a vote to the page using pageId
+      const updatedPage = await addVoteToPage(pageId, token);
+
+      // Update local state
+      setVotes(prev => updatedPage.votes || prev + 1);
       setVoted(true);
       
-      // Store vote in localStorage
-      const votedPages = JSON.parse(localStorage.getItem('voted_pages') || '[]');
-      votedPages.push(pageSlug);
-      localStorage.setItem('voted_pages', JSON.stringify(votedPages));
-      
-      // Call parent callback 
+      // Call the onVote callback if provided
       if (onVote) {
-        await onVote(pageSlug);
+        onVote(updatedPage.votes || votes + 1);
       }
-      
-      // In production,Make API CAll here Uche and Mike
-      // await fetch(`/api/pages/${pageSlug}/vote`, { method: 'POST' });
-      
+
+      // Mark as voted locally using pageSlug for storage
+      if (pageSlug) {
+        const votedPages = JSON.parse(localStorage.getItem('voted_pages') || '[]');
+        if (!votedPages.includes(pageSlug)) {
+          votedPages.push(pageSlug);
+          localStorage.setItem('voted_pages', JSON.stringify(votedPages));
+        }
+      }
     } catch (error) {
-      // Revert on error
-      setVotes(prev => prev - 1);
-      setVoted(false);
       console.error('Failed to vote:', error);
+      
+      if (error.response) {
+        if (error.response.status === 401) {
+          alert('You need to be logged in to vote');
+        } else if (error.response.status === 403) {
+          alert('You are not authorized to vote on this page');
+        } else if (error.response.status === 409) {
+          alert('You have already voted on this page');
+          setVoted(true);
+        } else {
+          alert('Failed to submit vote. Please try again.');
+        }
+      } else {
+        alert('Network error. Please check your connection and try again.');
+      }
     } finally {
       setIsVoting(false);
     }
@@ -88,7 +111,7 @@ const VotingButton = ({ pageSlug, initialVotes = 0, hasVoted = false, onVote }) 
           transition={{ duration: 0.3 }}
           key={votes}
         >
-          {votes} {votes === 1 ? 'vote' : 'votes'}
+          {votes.length} {votes === 1 ? 'vote' : 'votes'}
         </motion.div>
 
         {/* Loading spinner */}

@@ -1,26 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Share2, Eye } from 'lucide-react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { getPageBySlug } from '../services/pages';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Share2, Eye } from "lucide-react";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { getPageBySlug, addVoteToPage } from "../services/pages";
 
-import ToneBasedBackgroundEffects from './ToneBasedBackgroundEffects';
-import AudioPlayer from './AudioPlayer';
-import ImageCarousel from './ImageCarousel';
-import GlassmorphicCard from './GlassmorphicCard';
-import VotingButton from './VotingButton';
+import ToneBasedBackgroundEffects from "./ToneBasedBackgroundEffects";
+import AudioPlayer from "./AudioPlayer";
+import ImageCarousel from "./ImageCarousel";
+import GlassmorphicCard from "./GlassmorphicCard";
+import VotingButton from "./VotingButton";
 
-const PageViewer = ({ 
-  slug: propSlug = null, 
-  previewData = null 
-}) => {
+const PageViewer = ({ slug: propSlug = null, previewData = null }) => {
   const params = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // Get slug from URL params or props
-  const slug = propSlug || params.slug || 'demo-page';
-  
+  const slug = propSlug || params.slug;
+
   const [pageData, setPageData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,88 +26,115 @@ const PageViewer = ({
 
   useEffect(() => {
     const loadPageData = async () => {
+      if (!slug) {
+        setError("No page identifier provided");
+        setLoading(false);
+        return;
+      }
+
       try {
-        // Check if this is a preview (data passed in URL or props)
+        setLoading(true);
+        setError(null);
+
+        // Check if this is a preview with data passed in URL search params
         const searchParams = new URLSearchParams(location.search);
-        const previewData = searchParams.get('data');
-        
-        if (previewData) {
-          console.log('Loading preview data from URL');
-          const decoded = JSON.parse(decodeURIComponent(previewData));
+        const previewDataParam = searchParams.get("data");
+
+        if (previewDataParam) {
+          const decoded = JSON.parse(decodeURIComponent(previewDataParam));
           setPageData(decoded);
+          setViews(decoded.views || 0);
           setLoading(false);
           return;
         }
 
-        // If previewData is passed as prop
+        // If previewData is passed as prop (preview mode)
         if (previewData) {
-          console.log('Loading preview data from props');
           setPageData(previewData);
+          setViews(previewData.views || 0);
           setLoading(false);
           return;
         }
 
-        // Try to load from localStorage first
-        console.log('Loading page data for slug:', slug);
-        const pages = JSON.parse(localStorage.getItem('theend_pages') || '{}');
-        console.log('Available pages:', Object.keys(pages));
-        
-        let page = pages[slug];
-        
+        // Fetch page data from API
+        const response = await getPageBySlug(slug);
+
+        // The response might be nested (e.g., response.data or response.page)
+        // Adjust this based on your actual API response structure
+        const page = response.data || response.page || response;
+
         if (page) {
-          console.log('Found page in localStorage:', page);
           setPageData(page);
           setViews(page.views || 0);
-          
-          // Increment view count
-          page.views = (page.views || 0) + 1;
-          pages[slug] = page;
+
+          // Optionally increment view count locally for UI feedback
+          // You might want to call an API endpoint to track views server-side
           try {
-            localStorage.setItem('theend_pages', JSON.stringify(pages));
-            setViews(page.views);
-          } catch (error) {
-            console.log('Could not update view count:', error);
+            // Update local view count immediately for better UX
+            setViews((prev) => prev + 1);
+
+            // You could add an API call here to increment views on the server
+            // await incrementPageViews(slug);
+          } catch (viewError) {
+            console.log("Could not update view count:", viewError);
           }
         } else {
-          // Try sessionStorage as fallback
-          const sessionData = sessionStorage.getItem(`theend_page_${slug}`);
-          if (sessionData) {
-            console.log('Found page in sessionStorage');
-            const sessionPage = JSON.parse(sessionData);
-            setPageData(sessionPage);
-            setViews(sessionPage.views || 0);
-          } else {
-            console.log('Page not found in localStorage or sessionStorage');
-            setError('Page not found. This page may not exist or may have been removed.');
-          }
+          setError(
+            "Page not found. This page may not exist or may have been removed."
+          );
         }
       } catch (err) {
-        console.error('Error loading page:', err);
-        setError('Error loading page. Please try again.');
+        console.error("Error loading page:", err);
+
+        // Handle different types of errors
+        if (err.response) {
+          // Server responded with an error status
+          if (err.response.status === 404) {
+            setError(
+              "Page not found. This page may not exist or may have been removed."
+            );
+          } else if (err.response.status >= 500) {
+            setError("Server error. Please try again later.");
+          } else {
+            setError("Failed to load page. Please try again.");
+          }
+        } else if (err.request) {
+          // Network error
+          setError(
+            "Network error. Please check your connection and try again."
+          );
+        } else {
+          // Other error
+          setError("An unexpected error occurred. Please try again.");
+        }
       } finally {
         setLoading(false);
       }
     };
 
-    // Check if user has already voted for this page
-    const votedPages = JSON.parse(localStorage.getItem('voted_pages') || '[]');
-    setHasVoted(votedPages.includes(slug));
+    // Check if user has already voted for this page (stored locally)
+    if (slug) {
+      const votedPages = JSON.parse(
+        localStorage.getItem("voted_pages") || "[]"
+      );
+      setHasVoted(votedPages.includes(slug));
+    }
 
     loadPageData();
   }, [slug, location.search, previewData]);
 
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/page/${slug}`;
-    
+    const shareUrl = `${window.location.origin}/view/${slug}`;
+
     if (navigator.share) {
       try {
         await navigator.share({
           title: pageData.title,
           text: `Check out this farewell page: ${pageData.title}`,
-          url: shareUrl
+          url: shareUrl,
         });
       } catch (err) {
-        console.log('Error sharing:', err);
+        console.log("Error sharing:", err);
         // Fallback to clipboard
         copyToClipboard(shareUrl);
       }
@@ -123,49 +147,22 @@ const PageViewer = ({
     try {
       await navigator.clipboard.writeText(url);
       // You might want to show a toast notification here
-      alert('Link copied to clipboard!');
+      alert("Link copied to clipboard!");
     } catch (err) {
-      console.log('Error copying to clipboard:', err);
+      console.log("Error copying to clipboard:", err);
       // Fallback for older browsers
-      const textArea = document.createElement('textarea');
+      const textArea = document.createElement("textarea");
       textArea.value = url;
       document.body.appendChild(textArea);
       textArea.select();
-      document.execCommand('copy');
+      document.execCommand("copy");
       document.body.removeChild(textArea);
-      alert('Link copied to clipboard!');
-    }
-  };
-
-  const handleVote = async (pageSlug) => {
-    // Update page votes in localStorage
-    try {
-      const pages = JSON.parse(localStorage.getItem('theend_pages') || '{}');
-      if (pages[pageSlug]) {
-        pages[pageSlug].votes = (pages[pageSlug].votes || 0) + 1;
-        localStorage.setItem('theend_pages', JSON.stringify(pages));
-        
-        // Update local state
-        setPageData(prev => ({
-          ...prev,
-          votes: (prev.votes || 0) + 1
-        }));
-      }
-      
-      // Mark as voted
-      const votedPages = JSON.parse(localStorage.getItem('voted_pages') || '[]');
-      if (!votedPages.includes(pageSlug)) {
-        votedPages.push(pageSlug);
-        localStorage.setItem('voted_pages', JSON.stringify(votedPages));
-        setHasVoted(true);
-      }
-    } catch (error) {
-      console.error('Failed to update vote count:', error);
+      alert("Link copied to clipboard!");
     }
   };
 
   const handleBackToHome = () => {
-    navigate('/');
+    navigate("/");
   };
 
   if (loading) {
@@ -206,7 +203,7 @@ const PageViewer = ({
         >
           <h1 className="text-8xl font-bold text-white mb-4">404</h1>
           <p className="text-gray-400 text-xl mb-8">{error}</p>
-          <motion.button 
+          <motion.button
             onClick={handleBackToHome}
             className="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold hover:from-purple-600 hover:to-pink-600 transition-all duration-300"
             whileHover={{ scale: 1.05, y: -2 }}
@@ -220,37 +217,48 @@ const PageViewer = ({
     );
   }
 
+  // Return early if no pageData yet
+  if (!pageData) {
+    return null;
+  }
+
   // Get tone-specific text color
   const getToneTextColor = (tone) => {
     const colors = {
-      dramatic: '#ffffff',
-      ironic: '#1f2937',
-      cringe: '#ffffff',
-      classy: '#f3f4f6',
-      touching: '#8b4513',
-      absurd: '#1f2937',
-      'passive-aggressive': '#ffffff',
-      honest: '#1f2937'
+      dramatic: "#ffffff",
+      ironic: "#1f2937",
+      cringe: "#ffffff",
+      classy: "#f3f4f6",
+      touching: "#8b4513",
+      absurd: "#1f2937",
+      "passive-aggressive": "#ffffff",
+      honest: "#1f2937",
     };
-    return colors[tone] || '#ffffff';
+    return colors[tone] || "#ffffff";
   };
 
-  const textColor = pageData.textColor || getToneTextColor(pageData.tone);
+  const textColor =
+    pageData.textColor || getToneTextColor(pageData.tone || "honest");
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ color: textColor }}>
+    <div
+      className="min-h-screen relative overflow-hidden"
+      style={{ color: textColor }}
+    >
       {/* Tone-based background effects */}
       <ToneBasedBackgroundEffects tone={pageData.tone} />
 
       {/* Background image overlay */}
-      {pageData.backgroundImage && (
-        <div 
+      {(pageData.backgroundImage?.url || pageData.backgroundImage) && (
+        <div
           className="absolute inset-0 z-0"
           style={{
-            backgroundImage: `url(${pageData.backgroundImage.url})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundAttachment: 'fixed'
+            backgroundImage: `url(${
+              pageData.backgroundImage?.url || pageData.backgroundImage
+            })`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundAttachment: "fixed",
           }}
         >
           <div className="absolute inset-0 bg-black/40" />
@@ -264,7 +272,7 @@ const PageViewer = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        <motion.button 
+        <motion.button
           onClick={handleBackToHome}
           className="flex items-center gap-2 px-4 py-2 bg-black/30 backdrop-blur-md rounded-xl text-sm font-medium border border-white/10 hover:bg-black/50 transition-all duration-300"
           whileHover={{ scale: 1.05, x: -5 }}
@@ -274,7 +282,7 @@ const PageViewer = ({
           <ArrowLeft className="w-4 h-4" />
           Back to TheEnd.page
         </motion.button>
-        
+
         <div className="flex items-center gap-4">
           <motion.button
             onClick={handleShare}
@@ -285,7 +293,7 @@ const PageViewer = ({
           >
             <Share2 className="w-5 h-5" style={{ color: textColor }} />
           </motion.button>
-          
+
           <motion.div
             className="flex items-center gap-2 px-4 py-2 bg-black/30 backdrop-blur-md rounded-xl border border-white/10"
             initial={{ scale: 0 }}
@@ -311,10 +319,12 @@ const PageViewer = ({
             transition={{ duration: 1, delay: 0.3 }}
           >
             <GlassmorphicCard
-              title={pageData.title}
-              mainMessage={pageData.mainMessage}
-              subMessage={pageData.subMessage}
-              tone={pageData.tone}
+              title={pageData.title || "Untitled"}
+              mainMessage={
+                pageData.mainMessage || pageData.content || "No message"
+              }
+              subMessage={pageData.subMessage || pageData.description || ""}
+              tone={pageData.tone || "honest"}
               className="mb-8"
             />
           </motion.div>
@@ -327,8 +337,8 @@ const PageViewer = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
             >
-              <ImageCarousel 
-                images={pageData.images} 
+              <ImageCarousel
+                images={pageData.images}
                 autoplay={pageData.slideshowAutoplay}
               />
             </motion.div>
@@ -342,8 +352,8 @@ const PageViewer = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.8 }}
             >
-              <AudioPlayer 
-                audioSrc={pageData.music.url} 
+              <AudioPlayer
+                audioSrc={pageData.music.url}
                 autoplay={pageData.autoplayMusic}
               />
             </motion.div>
@@ -357,10 +367,13 @@ const PageViewer = ({
             transition={{ duration: 0.8, delay: 1 }}
           >
             <VotingButton
-              pageSlug={slug}
-              initialVotes={pageData.votes || 0}
-              hasVoted={hasVoted}
-              onVote={handleVote}
+              pageId={pageData._id} // The ID used for API calls
+              pageSlug="example-page" // The slug used for local storage
+              initialVotes={10}
+              hasVoted={false}
+              onVote={(newVoteCount) =>
+                console.log("New vote count:", newVoteCount)
+              }
             />
           </motion.div>
 
@@ -372,7 +385,10 @@ const PageViewer = ({
             transition={{ delay: 1.2, duration: 1 }}
           >
             <p className="text-sm opacity-60" style={{ color: textColor }}>
-              Created on {pageData.createdAt ? new Date(pageData.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}
+              Created on{" "}
+              {pageData.createdAt
+                ? new Date(pageData.createdAt).toLocaleDateString()
+                : new Date().toLocaleDateString()}
             </p>
             <p className="text-xs opacity-40 mt-2" style={{ color: textColor }}>
               Made with ❤️ on TheEnd.page
@@ -383,7 +399,7 @@ const PageViewer = ({
 
       {/* Special effects for specific tones */}
       <AnimatePresence>
-        {pageData.tone === 'cringe' && (
+        {pageData.tone === "cringe" && (
           <motion.div
             className="fixed inset-0 pointer-events-none z-10"
             initial={{ opacity: 0 }}
@@ -401,13 +417,13 @@ const PageViewer = ({
                 animate={{
                   rotate: [0, 360],
                   scale: [0, 1, 0],
-                  opacity: [0, 1, 0]
+                  opacity: [0, 1, 0],
                 }}
                 transition={{
                   duration: 3,
                   repeat: Infinity,
                   delay: i * 0.5,
-                  repeatDelay: 2
+                  repeatDelay: 2,
                 }}
               >
                 ✨
@@ -416,7 +432,7 @@ const PageViewer = ({
           </motion.div>
         )}
 
-        {pageData.tone === 'touching' && (
+        {pageData.tone === "touching" && (
           <motion.div
             className="fixed inset-0 pointer-events-none z-10"
             initial={{ opacity: 0 }}
